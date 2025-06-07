@@ -2,7 +2,7 @@ name: Android Build
 
 on:
   workflow_dispatch:
-  pull
+  push:
     branches: [ main ]
   pull_request:
 concurrency:
