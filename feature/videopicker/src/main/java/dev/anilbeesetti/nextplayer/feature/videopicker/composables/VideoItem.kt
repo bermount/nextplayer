@@ -111,14 +111,14 @@ fun VideoItem(
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .background(MaterialTheme.colorScheme.secondaryContainer),
+                                .background(Color(0xFFFFE6E6)),
                         )
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth(video.playedPercentage)
                                 .fillMaxHeight()
                                 .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primary),
+                                .background(Color(0xFFFF0000)),
                         )
                     }
                 }
