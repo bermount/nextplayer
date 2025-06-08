@@ -23,8 +23,8 @@ jobs:
       - name: Pull from main
         run: |
           git fetch origin main
-          git merge origin/main --no-edit || true
-
+          git merge origin/main --no-edit --allow-unrelated-histories || true
+          
       - name: Push changes
         run: |
           git push origin A
