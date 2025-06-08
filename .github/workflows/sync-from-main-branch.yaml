@@ -26,7 +26,5 @@ jobs:
             echo "Syncing main to $branch"
             git checkout $branch
             git merge main -X theirs --no-edit --allow-unrelated-histories || true
-      
-      - name: Push changes
-        run: |
-          git push origin $branch
+            git push origin $branch
+          done
