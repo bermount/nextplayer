@@ -1,0 +1,30 @@
+name: Sync branch main to A
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target branch (A)
+        uses: actions/checkout@v4
+        with:
+          ref: A
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Pull from main
+        run: |
+          git fetch origin main
+          git merge origin/main --no-edit || true
+
+      - name: Push changes
+        run: |
+          git push origin A
