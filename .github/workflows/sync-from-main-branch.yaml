@@ -1,9 +1,9 @@
 name: Sync branch main to all
 
 on:
-  push:
-    branches:
-      - main
+#  push:
+#    branches:
+#      - main
   workflow_dispatch:
 
 jobs:
