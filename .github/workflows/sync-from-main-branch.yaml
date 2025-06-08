@@ -1,4 +1,4 @@
-name: Sync branch main to A
+name: Sync branch main to all
 
 on:
   push:
@@ -10,21 +10,23 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout target branch (A)
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: A
-          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
-      - name: Set up Git user
+      - name: Set up Git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Pull from main
         run: |
-          git fetch origin main
-          git merge origin/main -X theirs --no-edit --allow-unrelated-histories || true
+          for branch in $(git for-each-ref --format='%(refname:short)' refs/heads/ | grep -v '^main$'); do
+            echo "Syncing main to $branch"
+            git checkout $branch
+            git merge main -X theirs --no-edit --allow-unrelated-histories || true
+      
       - name: Push changes
         run: |
-          git push origin A
+          git push origin $branch
