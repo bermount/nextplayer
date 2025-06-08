@@ -51,12 +51,12 @@ fun VideoItem(
     ListItemComponent(
         colors = ListItemDefaults.colors(
             headlineColor = if (isRecentlyPlayedVideo && preferences.markLastPlayedMedia) {
-                MaterialTheme.colorScheme.primary
+                Color(0xFFFF6666)
             } else {
                 ListItemDefaults.colors().headlineColor
             },
             supportingColor = if (isRecentlyPlayedVideo && preferences.markLastPlayedMedia) {
-                MaterialTheme.colorScheme.primary
+                Color(0xFFFF9999)
             } else {
                 ListItemDefaults.colors().supportingTextColor
             },
@@ -111,14 +111,14 @@ fun VideoItem(
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .background(MaterialTheme.colorScheme.secondaryContainer),
+                                .background(Color(0xFFFFE6E6)),
                         )
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth(video.playedPercentage)
                                 .fillMaxHeight()
                                 .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primary),
+                                .background(Color(0xFFFF0000)),
                         )
                     }
                 }
