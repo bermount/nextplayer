@@ -40,12 +40,12 @@ fun FolderItem(
     ListItemComponent(
         colors = ListItemDefaults.colors(
             headlineColor = if (isRecentlyPlayedFolder && preferences.markLastPlayedMedia) {
-                Color(0xFFCC1414)
+                Color(0xFFFF0000)
             } else {
                 ListItemDefaults.colors().headlineColor
             },
             supportingColor = if (isRecentlyPlayedFolder && preferences.markLastPlayedMedia) {
-                Color(0xFFFF0000)
+                Color(0xFFFF9999)
             } else {
                 ListItemDefaults.colors().supportingTextColor
             },
