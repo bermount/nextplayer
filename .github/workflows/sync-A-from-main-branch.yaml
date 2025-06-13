@@ -1,19 +1,19 @@
-name: Sync branch main to A
+name: Sync branch A to B
 
 on:
-#  push:
-#    branches:
-#      - main
+  push:
+    branches:
+      - A
   workflow_dispatch:
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout target branch (A)
+      - name: Checkout target branch (B)
         uses: actions/checkout@v4
         with:
-          ref: A
+          ref: B
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
@@ -21,10 +21,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-      - name: Pull from main
+      - name: Pull from A
         run: |
-          git fetch origin main
-          git merge origin/main -X theirs --no-edit --allow-unrelated-histories || true
+          git fetch origin A
+          git merge origin/A -X theirs --no-edit --allow-unrelated-histories || true
       - name: Push changes
         run: |
-          git push origin A
+          git push origin B
