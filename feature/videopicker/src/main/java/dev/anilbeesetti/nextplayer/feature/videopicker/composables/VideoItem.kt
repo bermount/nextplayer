@@ -51,7 +51,7 @@ fun VideoItem(
     ListItemComponent(
         colors = ListItemDefaults.colors(
             headlineColor = if (isRecentlyPlayedVideo && preferences.markLastPlayedMedia) {
-                Color(0xFFFF6666)
+                Color(0xFFCC1414)
             } else {
                 ListItemDefaults.colors().headlineColor
             },
