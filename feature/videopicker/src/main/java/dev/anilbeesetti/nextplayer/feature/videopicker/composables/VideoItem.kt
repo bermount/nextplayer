@@ -56,7 +56,7 @@ fun VideoItem(
                 ListItemDefaults.colors().headlineColor
             },
             supportingColor = if (isRecentlyPlayedVideo && preferences.markLastPlayedMedia) {
-                Color(0xFFFF9999)
+                Color(0xFFFF0000)
             } else {
                 ListItemDefaults.colors().supportingTextColor
             },
@@ -104,7 +104,7 @@ fun VideoItem(
                 if (preferences.showPlayedProgress && video.playedPercentage > 0) {
                     Box(
                         modifier = Modifier
-                            .height(4.dp)
+                            .height(5.dp)
                             .fillMaxWidth()
                             .align(Alignment.BottomCenter),
                     ) {
