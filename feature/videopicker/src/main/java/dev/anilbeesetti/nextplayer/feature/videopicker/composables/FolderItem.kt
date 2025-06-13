@@ -44,7 +44,7 @@ fun FolderItem(
                 ListItemDefaults.colors().headlineColor
             },
             supportingColor = if (isRecentlyPlayedFolder && preferences.markLastPlayedMedia) {
-                Color(0xFFD12B2B)
+                Color(0xFFFF9999)
             } else {
                 ListItemDefaults.colors().supportingTextColor
             },
