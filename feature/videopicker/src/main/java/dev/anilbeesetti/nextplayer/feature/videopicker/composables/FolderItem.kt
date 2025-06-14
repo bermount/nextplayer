@@ -54,7 +54,7 @@ fun FolderItem(
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.folder_thumb),
                 contentDescription = "",
-                tint = MaterialTheme.colorScheme.secondaryContainer,
+                tint = Color(0xFFFAF0E6),
                 modifier = Modifier
                     .width(min(90.dp, LocalConfiguration.current.screenWidthDp.dp * 0.3f))
                     .aspectRatio(20 / 17f),
