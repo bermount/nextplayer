@@ -1,9 +1,9 @@
 name: Sync branch A to B
 
 on:
-  push:
-    branches:
-      - A
+#  push:
+#    branches:
+#      - A
   workflow_dispatch:
 
 jobs:
