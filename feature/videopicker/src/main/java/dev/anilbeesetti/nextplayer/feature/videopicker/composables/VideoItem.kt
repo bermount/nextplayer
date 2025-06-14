@@ -133,16 +133,16 @@ fun VideoItem(
                 overflow = TextOverflow.Ellipsis,
             )
         },
-#        supportingContent = {
-#            if (preferences.showPathField) {
-#                Text(
-#                    text = video.path.substringBeforeLast("/"),
-#                    maxLines = 1,
-#                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 9.sp),
-#                    overflow = TextOverflow.Ellipsis,
-#                    modifier = Modifier.padding(vertical = 1.dp),
-#                )
-#            }
+        supportingContent = {
+            if (preferences.showPathField) {
+                Text(
+                    text = video.path.substringBeforeLast("/"),
+                    maxLines = 1,
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 0.sp),
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(vertical = 0.dp),
+                )
+            }
             FlowRow(
                 modifier = Modifier
                     .fillMaxWidth()
