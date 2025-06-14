@@ -30,6 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.min
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -127,8 +128,8 @@ fun VideoItem(
         headlineContent = {
             Text(
                 text = if (preferences.showExtensionField) video.nameWithExtension else video.displayName,
-                maxLines = 2,
-                style = MaterialTheme.typography.titleMedium,
+                maxLines = 3,
+                style = MaterialTheme.typography.titleMedium.copy(fontSize = 12.sp),
                 overflow = TextOverflow.Ellipsis,
             )
         },
@@ -136,7 +137,7 @@ fun VideoItem(
             if (preferences.showPathField) {
                 Text(
                     text = video.path.substringBeforeLast("/"),
-                    maxLines = 2,
+                    maxLines = 1,
                     style = MaterialTheme.typography.bodySmall,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(vertical = 2.dp),
