@@ -129,7 +129,7 @@ fun VideoItem(
             Text(
                 text = if (preferences.showExtensionField) video.nameWithExtension else video.displayName,
                 maxLines = 3,
-                style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
+                style = MaterialTheme.typography.titleMedium,
                 overflow = TextOverflow.Ellipsis,
             )
         },
@@ -138,7 +138,7 @@ fun VideoItem(
                 Text(
                     text = video.path.substringBeforeLast("/"),
                     maxLines = 1,
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 9.sp),
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 7.sp),
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(vertical = 2.dp),
                 )
