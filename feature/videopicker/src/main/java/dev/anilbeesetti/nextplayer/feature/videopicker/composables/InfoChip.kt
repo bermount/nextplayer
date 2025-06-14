@@ -12,7 +12,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 @Composable
 fun InfoChip(
@@ -24,14 +23,11 @@ fun InfoChip(
 ) {
     Text(
         text = text,
-        style = MaterialTheme.typography.labelSmall.copy(
-                                                        fontWeight = FontWeight.Normal,
-                                                        fontSize = 8.sp
-                                                    ),
+        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Normal),
         color = contentColor,
         modifier = modifier
             .clip(shape)
             .background(backgroundColor)
-            .padding(vertical = 1.dp, horizontal = 2.7.dp),
+            .padding(vertical = 1.dp, horizontal = 3.dp),
     )
 }
