@@ -218,6 +218,7 @@
                         android:src="@drawable/ic_headset"
                         app:tint="@android:color/white" />
 
+/**
 *                    <ImageButton
 *                        android:id="@+id/btn_loop_mode"
 *                        android:layout_width="wrap_content"
@@ -228,6 +229,7 @@
 *                        android:padding="12dp"
 *                        android:src="@drawable/ic_loop_off"
 *                        app:tint="@android:color/white" />
+*/
 
                 </LinearLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
