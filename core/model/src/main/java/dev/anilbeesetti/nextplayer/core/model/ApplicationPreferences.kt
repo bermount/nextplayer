@@ -16,10 +16,10 @@ data class ApplicationPreferences(
 
     // Fields
     val showDurationField: Boolean = true,
-    val showExtensionField: Boolean = false,
+    val showExtensionField: Boolean = true,
     val showPathField: Boolean = true,
-    val showResolutionField: Boolean = false,
-    val showSizeField: Boolean = false,
+    val showResolutionField: Boolean = true,
+    val showSizeField: Boolean = true,
     val showThumbnailField: Boolean = true,
     val showPlayedProgress: Boolean = true,
 )
