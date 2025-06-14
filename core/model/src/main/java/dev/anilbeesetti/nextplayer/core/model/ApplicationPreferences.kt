@@ -8,7 +8,7 @@ data class ApplicationPreferences(
     val sortOrder: Sort.Order = Sort.Order.ASCENDING,
     val themeConfig: ThemeConfig = ThemeConfig.SYSTEM,
     val useHighContrastDarkTheme: Boolean = false,
-    val useDynamicColors: Boolean = true,
+    val useDynamicColors: Boolean = false,
     val markLastPlayedMedia: Boolean = true,
     val showFloatingPlayButton: Boolean = true,
     val excludeFolders: List<String> = emptyList(),
