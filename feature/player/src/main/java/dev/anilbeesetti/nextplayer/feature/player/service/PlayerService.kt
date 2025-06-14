@@ -114,7 +114,8 @@ class PlayerService : MediaSessionService() {
             super.onPositionDiscontinuity(oldPosition, newPosition, reason)
             val oldMediaItem = oldPosition.mediaItem ?: return
             val uri = oldMediaItem.mediaId.toUri()
-            val filename = applicationContext.getFilenameFromUri(uri)
+            val filenamefull = applicationContext.getFilenameFromUri(uri)
+            val filename = filenamefull.substringAfterLast('/')
             
             when (reason) {
                 DISCONTINUITY_REASON_SEEK,
@@ -234,7 +235,8 @@ class PlayerService : MediaSessionService() {
                     mediaSession?.player?.let { player ->
                         val currentMediaItem = player.currentMediaItem ?: return@let
                         val uri = currentMediaItem.mediaId.toUri()
-                        val filename = applicationContext.getFilenameFromUri(uri)
+                        val filenamefull = applicationContext.getFilenameFromUri(uri)
+                        val filename = filenamefull.substringAfterLast('/')
                         val textTracks = player.currentTracks.groups.filter {
                             it.type == C.TRACK_TYPE_TEXT && it.isSupported
                         }
