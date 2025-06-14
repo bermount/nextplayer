@@ -105,7 +105,7 @@ fun VideoItem(
                 if (preferences.showPlayedProgress && video.playedPercentage > 0) {
                     Box(
                         modifier = Modifier
-                            .height(6.dp)
+                            .height(5.dp)
                             .fillMaxWidth()
                             .align(Alignment.BottomCenter),
                     ) {
