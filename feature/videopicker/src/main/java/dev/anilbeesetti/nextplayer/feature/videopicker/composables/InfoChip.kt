@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 fun InfoChip(
     text: String,
     modifier: Modifier = Modifier,
-    backgroundColor: Color = MaterialTheme.colorScheme.secondaryContainer,
+    backgroundColor: Color = Color(0xFFFAEBD7),
     contentColor: Color = MaterialTheme.colorScheme.onSecondaryContainer,
     shape: Shape = MaterialTheme.shapes.extraSmall.copy(CornerSize(2.dp)),
 ) {
