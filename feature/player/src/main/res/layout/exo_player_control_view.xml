@@ -228,7 +228,7 @@
 #                        android:padding="12dp"
 #                        android:src="@drawable/ic_loop_off"
 #                        app:tint="@android:color/white" />
-
+#
                 </LinearLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
