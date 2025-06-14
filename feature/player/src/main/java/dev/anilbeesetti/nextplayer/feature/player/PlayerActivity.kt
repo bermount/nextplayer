@@ -657,6 +657,45 @@ class PlayerActivity : AppCompatActivity() {
             onBackPressedDispatcher.onBackPressed()
         }
 
+        updateLoopModeIcon(playerPreferences.loopMode)
+        loopModeButton.setOnClickListener {
+            val currentLoopMode = playerPreferences.loopMode
+            val nextLoopMode = when (currentLoopMode) {
+                LoopMode.OFF -> LoopMode.ONE
+                LoopMode.ONE -> LoopMode.ALL
+                LoopMode.ALL -> LoopMode.OFF
+            }
+
+            viewModel.setLoopMode(nextLoopMode)
+            updateLoopModeIcon(nextLoopMode)
+            applyLoopMode(nextLoopMode)
+            showPlayerInfo(
+                info = when (nextLoopMode) {
+                    LoopMode.OFF -> getString(coreUiR.string.loop_mode_off)
+                    LoopMode.ONE -> getString(coreUiR.string.loop_mode_one)
+                    LoopMode.ALL -> getString(coreUiR.string.loop_mode_all)
+                },
+            )
+        }
+    }
+
+    private fun updateLoopModeIcon(loopMode: LoopMode) {
+        val iconResId = when (loopMode) {
+            LoopMode.OFF -> coreUiR.drawable.ic_loop_off
+            LoopMode.ONE -> coreUiR.drawable.ic_loop_one
+            LoopMode.ALL -> coreUiR.drawable.ic_loop_all
+        }
+        loopModeButton.setImageResource(iconResId)
+    }
+
+    private fun applyLoopMode(loopMode: LoopMode) {
+        mediaController?.repeatMode = when (loopMode) {
+            LoopMode.OFF -> Player.REPEAT_MODE_OFF
+            LoopMode.ONE -> Player.REPEAT_MODE_ONE
+            LoopMode.ALL -> Player.REPEAT_MODE_ALL
+        }
+    }
+
     private fun startPlayback() {
         val uri = intent.data ?: return
 
