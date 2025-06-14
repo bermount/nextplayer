@@ -137,10 +137,10 @@ fun VideoItem(
             if (preferences.showPathField) {
                 Text(
                     text = video.path.substringBeforeLast("/"),
-                    maxLines = 1,
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 0.sp),
+                    maxLines = 0,
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 8.sp),
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(vertical = 0.dp),
+                    modifier = Modifier.padding(vertical = 1.dp),
                 )
             }
             FlowRow(
