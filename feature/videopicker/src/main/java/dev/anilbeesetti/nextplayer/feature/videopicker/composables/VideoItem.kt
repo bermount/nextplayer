@@ -94,7 +94,7 @@ fun VideoItem(
                     InfoChip(
                         text = video.formattedDuration,
                         modifier = Modifier
-                            .padding(5.dp)
+                            .padding(5.8.dp)
                             .align(Alignment.BottomEnd),
                         backgroundColor = Color.Black.copy(alpha = 0.6f),
                         contentColor = Color.White,
