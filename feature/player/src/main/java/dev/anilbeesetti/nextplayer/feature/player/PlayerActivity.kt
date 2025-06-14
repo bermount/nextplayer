@@ -248,6 +248,7 @@ class PlayerActivity : AppCompatActivity() {
         videoTitleTextView = binding.playerView.findViewById(R.id.video_name)
         videoZoomButton = binding.playerView.findViewById(R.id.btn_video_zoom)
         playInBackgroundButton = binding.playerView.findViewById(R.id.btn_background)
+        loopModeButton = binding.playerView.findViewById(R.id.btn_loop_mode)
         extraControls = binding.playerView.findViewById(R.id.extra_controls)
 
         if (playerPreferences.controlButtonsPosition == ControlButtonsPosition.RIGHT) {
