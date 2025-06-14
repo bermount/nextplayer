@@ -52,7 +52,7 @@
     <color name="md_theme_dark_outline">#889392</color>
     <color name="md_theme_dark_background">#191C1C</color>
     <color name="md_theme_dark_onBackground">#E0E3E2</color>
-    <color name="md_theme_dark_surface">#212121</color>
+    <color name="md_theme_dark_surface">#191C1C</color>
     <color name="md_theme_dark_onSurface">#C4C7C6</color>
     <color name="md_theme_dark_surfaceVariant">#455A64</color>
     <color name="md_theme_dark_onSurfaceVariant">#F5F5F5</color>
