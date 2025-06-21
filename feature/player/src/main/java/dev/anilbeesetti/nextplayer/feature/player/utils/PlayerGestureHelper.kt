@@ -286,7 +286,7 @@ class PlayerGestureHelper(
                 }
             }
 
-            if (motionEvent.action == MotionEvent.ACTION_UP || motionEvent.pointerCount >= 3) {
+            if (motionEvent.action == MotionEvent.ACTION_UP || motionEvent.pointerCount >= 6) {
                 releaseGestures()
             }
             true
