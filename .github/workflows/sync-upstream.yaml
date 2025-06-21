@@ -28,9 +28,9 @@ jobs:
 
       - name: Enable sparse checkout (exclude upstream workflows)
         run: |
-          git sparse-checkout init --cone
+          git sparse-checkout init --no-cone
           echo "/*" > .git/info/sparse-checkout
-          echo "!/.github/workflows" >> .git/info/sparse-checkout
+          echo "!/.github/workflows/*" >> .git/info/sparse-checkout
           git sparse-checkout reapply
 
       - name: Merge from upstream (excluding workflows)
