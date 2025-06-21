@@ -118,6 +118,8 @@ class PlayerGestureHelper(
         },
     )
 
+    private val SEEK_GESTURE_THRESHOLD_PX = 80f
+    
     private val seekGestureDetector = GestureDetector(
         playerView.context,
         object : GestureDetector.SimpleOnGestureListener() {
@@ -135,6 +137,10 @@ class PlayerGestureHelper(
                 if (abs(distanceX / distanceY) < 2) return false
 
                 if (currentGestureAction == null) {
+                    val horizontalScrollDistance = abs(currentEvent.x - firstEvent.x)
+                    if (horizontalScrollDistance < SEEK_GESTURE_THRESHOLD_PX) {
+                        return false
+                    }
                     seekChange = 0L
                     seekStart = playerView.player?.currentPosition ?: 0L
                     playerView.controllerAutoShow = playerView.isControllerFullyVisible
