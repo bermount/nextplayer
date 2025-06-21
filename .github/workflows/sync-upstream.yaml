@@ -1,8 +1,8 @@
 name: Sync from upstream
 
 on:
-#  schedule:
-#    - cron: '0 3 * * 1' #Runs every monday
+  schedule:
+    - cron: '0 3 * * 1' #Runs every monday
   workflow_dispatch:
 
 jobs:
