@@ -309,8 +309,8 @@ class PlayerGestureHelper(
             // **FIXED**: This block now only runs on ACTION_MOVE, preventing it from hijacking ACTION_UP.
             if (isLongPressActive && currentGestureAction == GestureAction.FAST_PLAYBACK && motionEvent.actionMasked == MotionEvent.ACTION_MOVE) {
                 // Ensure pointerCount is valid for fast playback (1 or 2)
-                if (pointerCount < 1 || pointerCount > 4) {
-                    releaseGestures() // Cancel fast playback if too many/few fingers
+                if (pointerCount < 1) {
+                    releaseGestures() // Cancel fast playback if no fingers
                     return@setOnTouchListener true
                 }
 
@@ -321,7 +321,10 @@ class PlayerGestureHelper(
                     2 -> prefs.longPressControlsSpeed
                     3 -> prefs.longPressControlsSpeed + 0.2f
                     4 -> prefs.longPressControlsSpeed + 0.4f
-                    else -> 1.0f // Fallback, though guarded by above check
+                    5 -> prefs.longPressControlsSpeed + 0.6f
+                    6 -> prefs.longPressControlsSpeed + 0.8f
+                    7 -> prefs.longPressControlsSpeed + 1.0f
+                    8 -> prefs.longPressControlsSpeed + 1.2f
                 }
 
                 activity.showTopInfo(activity.getString(coreUiR.string.fast_playback_speed, targetSpeed))
