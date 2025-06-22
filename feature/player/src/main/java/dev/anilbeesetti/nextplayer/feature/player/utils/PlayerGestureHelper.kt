@@ -325,6 +325,7 @@ class PlayerGestureHelper(
                     6 -> prefs.longPressControlsSpeed + 0.8f
                     7 -> prefs.longPressControlsSpeed + 1.0f
                     8 -> prefs.longPressControlsSpeed + 1.2f
+                    else -> 1.0f // Fallback, though guarded by above check
                 }
 
                 activity.showTopInfo(activity.getString(coreUiR.string.fast_playback_speed, targetSpeed))
