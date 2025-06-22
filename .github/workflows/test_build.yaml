@@ -3,7 +3,6 @@ name: Test Build
 on:
   workflow_dispatch:
   push:
-    branches: [ A ]
 #  pull_request:
 
 concurrency:
