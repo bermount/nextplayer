@@ -325,6 +325,10 @@ class PlayerGestureHelper(
                     6 -> prefs.longPressControlsSpeed + 0.8f
                     7 -> prefs.longPressControlsSpeed + 1.0f
                     8 -> prefs.longPressControlsSpeed + 1.2f
+                    9 -> prefs.longPressControlsSpeed + 1.4f
+                    10 -> prefs.longPressControlsSpeed + 1.6f
+                    11 -> prefs.longPressControlsSpeed + 1.8f
+                    12 -> prefs.longPressControlsSpeed + 2.0f
                     else -> 1.0f // Fallback, though guarded by above check
                 }
 
