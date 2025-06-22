@@ -53,7 +53,7 @@ class PlayerGestureHelper(
     private var currentPlaybackSpeed: Float? = null
     private var isLongPressActive: Boolean = false
 
-    private val SEEK_GESTURE_THRESHOLD_PX = 45f
+    private val SEEK_GESTURE_THRESHOLD_PX = 95f
 
     private val tapGestureDetector = GestureDetector(playerView.context,
         object : GestureDetector.SimpleOnGestureListener() {
@@ -281,10 +281,9 @@ class PlayerGestureHelper(
                 val targetSpeed = when (pointerCount) {
                     1 -> (baseSpeed + prefs.longPressControlsSpeed) / 2f
                     2 -> prefs.longPressControlsSpeed
-                    3 -> prefs.longPressControlsSpeed + 0.2f
-                    4 -> prefs.longPressControlsSpeed + 0.4f
-                    5 -> prefs.longPressControlsSpeed + 0.6f
-                    else -> prefs.longPressControlsSpeed + 0.8f
+                    3 -> prefs.longPressControlsSpeed + 0.25f
+                    4 -> prefs.longPressControlsSpeed + 0.5f
+                    else -> prefs.longPressControlsSpeed + 0.75f
                 }
                 activity.showTopInfo(activity.getString(coreUiR.string.fast_playback_speed, targetSpeed))
                 playerView.player?.setPlaybackSpeed(targetSpeed)
