@@ -40,51 +40,52 @@ class PlayerGestureHelper(
     private val shouldFastSeek: Boolean
         get() = playerView.player?.duration?.let { prefs.shouldFastSeek(it) } == true
 
-    private var exoContentFrameLayout: AspectRatioFrameLayout = playerView.findViewById(R.id.exo_content_frame)
+    private var exoContentFrameLayout: AspectRatioFrameLayout =
+        playerView.findViewById(R.id.exo_content_frame)
 
     private var currentGestureAction: GestureAction? = null
     private var seekStart = 0L
     private var position = 0L
     private var seekChange = 0L
+    private var totalScrollX = 0f
     private var pointerCount = 1
-    private var isPlayingOnSeekStart: Boolean = false
+    private var isPlayingOnSeekStart = false
     private var currentPlaybackSpeed: Float? = null
+    private var isLongPressActive: Boolean = false
 
-    private val tapGestureDetector = GestureDetector(
-        playerView.context,
+    private val SEEK_GESTURE_THRESHOLD_PX = 95f
+
+    private val tapGestureDetector = GestureDetector(playerView.context,
         object : GestureDetector.SimpleOnGestureListener() {
             override fun onSingleTapConfirmed(event: MotionEvent): Boolean {
-                with(playerView) {
-                    if (!isControllerFullyVisible) showController() else hideController()
+                if (currentGestureAction == null) {
+                    with(playerView) {
+                        if (!isControllerFullyVisible) showController() else hideController()
+                    }
+                    return true
                 }
-                return true
+                return false
             }
 
             override fun onLongPress(e: MotionEvent) {
                 if (!prefs.useLongPressControls) return
                 if (playerView.player?.isPlaying == false) return
                 if (activity.isControlsLocked) return
-
                 if (currentGestureAction == null) {
                     currentGestureAction = GestureAction.FAST_PLAYBACK
+                    isLongPressActive = true
                     currentPlaybackSpeed = playerView.player?.playbackParameters?.speed
+                    playerView.hideController()
                 }
-                if (currentGestureAction != GestureAction.FAST_PLAYBACK) return
-                if (pointerCount >= 3) return
-
-                playerView.hideController()
-                activity.showTopInfo(activity.getString(coreUiR.string.fast_playback_speed, prefs.longPressControlsSpeed))
-                playerView.player?.setPlaybackSpeed(prefs.longPressControlsSpeed)
             }
 
             override fun onDoubleTap(event: MotionEvent): Boolean {
                 if (activity.isControlsLocked) return false
-
+                if (currentGestureAction != null) return false
                 playerView.player?.run {
                     when (prefs.doubleTapGesture) {
                         DoubleTapGesture.FAST_FORWARD_AND_REWIND -> {
                             val viewCenterX = playerView.measuredWidth / 2
-
                             if (event.x.toInt() < viewCenterX) {
                                 val newPosition = currentPosition - prefs.seekIncrement.toMillis
                                 seekBack(newPosition.coerceAtLeast(0), shouldFastSeek)
@@ -96,7 +97,6 @@ class PlayerGestureHelper(
 
                         DoubleTapGesture.BOTH -> {
                             val eventPositionX = event.x / playerView.measuredWidth
-
                             if (eventPositionX < 0.35) {
                                 val newPosition = currentPosition - prefs.seekIncrement.toMillis
                                 seekBack(newPosition.coerceAtLeast(0), shouldFastSeek)
@@ -109,25 +109,20 @@ class PlayerGestureHelper(
                         }
 
                         DoubleTapGesture.PLAY_PAUSE -> playerView.togglePlayPause()
-
                         DoubleTapGesture.NONE -> return false
                     }
                 } ?: return false
                 return true
             }
-        },
-    )
+        })
 
-    private val SEEK_GESTURE_THRESHOLD_PX = 95f
-    
-    private val seekGestureDetector = GestureDetector(
-        playerView.context,
+    private val seekGestureDetector = GestureDetector(playerView.context,
         object : GestureDetector.SimpleOnGestureListener() {
             override fun onScroll(
                 firstEvent: MotionEvent?,
                 currentEvent: MotionEvent,
                 distanceX: Float,
-                distanceY: Float,
+                distanceY: Float
             ): Boolean {
                 if (firstEvent == null) return false
                 if (inExclusionArea(firstEvent)) return false
@@ -135,14 +130,14 @@ class PlayerGestureHelper(
                 if (activity.isControlsLocked) return false
                 if (!activity.isMediaItemReady) return false
                 if (abs(distanceX / distanceY) < 2) return false
+                if (pointerCount != 1) return false
 
                 if (currentGestureAction == null) {
                     val horizontalScrollDistance = abs(currentEvent.x - firstEvent.x)
-                    if (horizontalScrollDistance < SEEK_GESTURE_THRESHOLD_PX) {
-                        return false
-                    }
-                    seekChange = 0L
+                    if (horizontalScrollDistance < SEEK_GESTURE_THRESHOLD_PX) return false
                     seekStart = playerView.player?.currentPosition ?: 0L
+                    seekChange = 0L
+                    totalScrollX = 0f
                     playerView.controllerAutoShow = playerView.isControllerFullyVisible
                     if (playerView.player?.isPlaying == true) {
                         playerView.player?.pause()
@@ -150,52 +145,50 @@ class PlayerGestureHelper(
                     }
                     currentGestureAction = GestureAction.SEEK
                 }
+
                 if (currentGestureAction != GestureAction.SEEK) return false
 
-                val distanceDiff = abs(Utils.pxToDp(distanceX) / 4).coerceIn(0.5f, 10f)
-                val change = (distanceDiff * SEEK_STEP_MS).toLong()
+                totalScrollX += -distanceX
+                val distanceDp = Utils.pxToDp(totalScrollX)
+                val step = (distanceDp / 4).coerceIn(-100f, 100f)
+                seekChange = (step * SEEK_STEP_MS).toLong()
 
                 playerView.player?.run {
-                    if (distanceX < 0L) {
-                        seekChange = (seekChange + change)
-                            .takeIf { it + seekStart < duration } ?: (duration - seekStart)
-                        position = (seekStart + seekChange).coerceAtMost(duration)
+                    position = (seekStart + seekChange).coerceIn(0, duration)
+                    if (seekChange >= 0) {
                         seekForward(positionMs = position, shouldFastSeek = shouldFastSeek)
                     } else {
-                        seekChange = (seekChange - change)
-                            .takeIf { it + seekStart > 0 } ?: (0 - seekStart)
-                        position = seekStart + seekChange
                         seekBack(positionMs = position, shouldFastSeek = shouldFastSeek)
                     }
                     activity.showPlayerInfo(
-                        info = Utils.formatDurationMillis(this.currentPosition),
-                        subInfo = "[${Utils.formatDurationMillisSign(seekChange)}]",
+                        info = Utils.formatDurationMillis(currentPosition),
+                        subInfo = "[${Utils.formatDurationMillisSign(seekChange)}]"
                     )
-                    return true
                 }
-                return false
-            }
-        },
-    )
 
-    private val volumeAndBrightnessGestureDetector = GestureDetector(
-        playerView.context,
+                return true
+            }
+        })
+
+    private val volumeAndBrightnessGestureDetector = GestureDetector(playerView.context,
         object : GestureDetector.SimpleOnGestureListener() {
             override fun onScroll(
                 firstEvent: MotionEvent?,
                 currentEvent: MotionEvent,
                 distanceX: Float,
-                distanceY: Float,
+                distanceY: Float
             ): Boolean {
                 if (firstEvent == null) return false
                 if (inExclusionArea(firstEvent)) return false
                 if (!prefs.useSwipeControls) return false
                 if (activity.isControlsLocked) return false
                 if (abs(distanceY / distanceX) < 2) return false
+                if (pointerCount != 1) return false
 
                 if (currentGestureAction == null) {
                     currentGestureAction = GestureAction.SWIPE
                 }
+
                 if (currentGestureAction != GestureAction.SWIPE) return false
 
                 val viewCenterX = playerView.measuredWidth / 2
@@ -211,13 +204,12 @@ class PlayerGestureHelper(
                     brightnessManager.setBrightness(brightnessManager.currentBrightness + change)
                     activity.showBrightnessGestureLayout()
                 }
+
                 return true
             }
-        },
-    )
+        })
 
-    private val zoomGestureDetector = ScaleGestureDetector(
-        playerView.context,
+    private val zoomGestureDetector = ScaleGestureDetector(playerView.context,
         object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
             private val SCALE_RANGE = 0.25f..4.0f
 
@@ -227,11 +219,13 @@ class PlayerGestureHelper(
 
                 if (currentGestureAction == null) {
                     currentGestureAction = GestureAction.ZOOM
+                    releaseGestures()
                 }
+
                 if (currentGestureAction != GestureAction.ZOOM) return false
 
                 playerView.player?.videoSize?.let { videoSize ->
-                    val scaleFactor = (exoContentFrameLayout.scaleX * detector.scaleFactor)
+                    val scaleFactor = exoContentFrameLayout.scaleX * detector.scaleFactor
                     val updatedVideoScale = (exoContentFrameLayout.width * scaleFactor) / videoSize.width.toFloat()
                     if (updatedVideoScale in SCALE_RANGE) {
                         exoContentFrameLayout.scaleX = scaleFactor
@@ -241,38 +235,31 @@ class PlayerGestureHelper(
                     val currentVideoScale = (exoContentFrameLayout.width * exoContentFrameLayout.scaleX) / videoSize.width.toFloat()
                     activity.showPlayerInfo("${(currentVideoScale * 100).roundToInt()}%")
                 }
+
                 return true
             }
-        },
-    )
+        })
 
     private fun releaseGestures() {
-        // hide the volume indicator
         activity.hideVolumeGestureLayout()
-        // hide the brightness indicator
         activity.hideBrightnessGestureLayout()
-        // hide info layout
         activity.hidePlayerInfo(0L)
-        // hides fast playback top info layout
         activity.hideTopInfo()
 
-        currentPlaybackSpeed?.let {
-            playerView.player?.setPlaybackSpeed(it)
-            currentPlaybackSpeed = null
+        if (currentGestureAction == GestureAction.FAST_PLAYBACK) {
+            playerView.player?.setPlaybackSpeed(currentPlaybackSpeed ?: 1.0f)
         }
 
+        currentPlaybackSpeed = null
         playerView.controllerAutoShow = true
         if (isPlayingOnSeekStart) playerView.player?.play()
         isPlayingOnSeekStart = false
         currentGestureAction = null
+        isLongPressActive = false
     }
 
-    /**
-     * Check if [firstEvent] is in the gesture exclusion area
-     */
     private fun inExclusionArea(firstEvent: MotionEvent): Boolean {
         val gestureExclusionBorder = playerView.context.dpToPx(GESTURE_EXCLUSION_AREA)
-
         return firstEvent.y < gestureExclusionBorder || firstEvent.y > playerView.height - gestureExclusionBorder ||
             firstEvent.x < gestureExclusionBorder || firstEvent.x > playerView.width - gestureExclusionBorder
     }
@@ -280,21 +267,47 @@ class PlayerGestureHelper(
     init {
         playerView.setOnTouchListener { _, motionEvent ->
             pointerCount = motionEvent.pointerCount
-            when (motionEvent.pointerCount) {
-                1 -> {
-                    tapGestureDetector.onTouchEvent(motionEvent)
-                    volumeAndBrightnessGestureDetector.onTouchEvent(motionEvent)
-                    seekGestureDetector.onTouchEvent(motionEvent)
-                }
-
-                2 -> {
-                    zoomGestureDetector.onTouchEvent(motionEvent)
-                }
-            }
-
-            if (motionEvent.action == MotionEvent.ACTION_UP || motionEvent.pointerCount >= 6) {
+            if (motionEvent.actionMasked == MotionEvent.ACTION_DOWN) {
                 releaseGestures()
             }
+
+            tapGestureDetector.onTouchEvent(motionEvent)
+
+            if (isLongPressActive &&
+                currentGestureAction == GestureAction.FAST_PLAYBACK &&
+                motionEvent.actionMasked == MotionEvent.ACTION_MOVE
+            ) {
+                val baseSpeed = currentPlaybackSpeed ?: playerView.player?.playbackParameters?.speed ?: 1.0f
+                val targetSpeed = when (pointerCount) {
+                    1 -> (baseSpeed + prefs.longPressControlsSpeed) / 2f
+                    2 -> prefs.longPressControlsSpeed
+                    3 -> prefs.longPressControlsSpeed + 0.25f
+                    4 -> prefs.longPressControlsSpeed + 0.5f
+                    else -> prefs.longPressControlsSpeed + 0.75f
+                }
+                activity.showTopInfo(activity.getString(coreUiR.string.fast_playback_speed, targetSpeed))
+                playerView.player?.setPlaybackSpeed(targetSpeed)
+                return@setOnTouchListener true
+            }
+
+            if (pointerCount >= 2) {
+                if (zoomGestureDetector.onTouchEvent(motionEvent)) return@setOnTouchListener true
+            }
+
+            if (currentGestureAction == null && pointerCount == 1) {
+                if (!volumeAndBrightnessGestureDetector.onTouchEvent(motionEvent)) {
+                    seekGestureDetector.onTouchEvent(motionEvent)
+                }
+            } else if (currentGestureAction == GestureAction.SWIPE) {
+                volumeAndBrightnessGestureDetector.onTouchEvent(motionEvent)
+            } else if (currentGestureAction == GestureAction.SEEK) {
+                seekGestureDetector.onTouchEvent(motionEvent)
+            }
+
+            if (motionEvent.actionMasked == MotionEvent.ACTION_UP || motionEvent.actionMasked == MotionEvent.ACTION_CANCEL) {
+                releaseGestures()
+            }
+
             true
         }
     }
