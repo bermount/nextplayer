@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.min
 import dev.anilbeesetti.nextplayer.core.common.Utils
 import dev.anilbeesetti.nextplayer.core.model.ApplicationPreferences
@@ -68,12 +69,12 @@ private fun FolderListItem(
     ListItemComponent(
         colors = ListItemDefaults.colors(
             headlineColor = if (isRecentlyPlayedFolder && preferences.markLastPlayedMedia) {
-                MaterialTheme.colorScheme.primary
+                Color(0xFFFF0000)
             } else {
                 ListItemDefaults.colors().headlineColor
             },
             supportingColor = if (isRecentlyPlayedFolder && preferences.markLastPlayedMedia) {
-                MaterialTheme.colorScheme.primary
+                Color(0xFFFF9999)
             } else {
                 ListItemDefaults.colors().supportingTextColor
             },
