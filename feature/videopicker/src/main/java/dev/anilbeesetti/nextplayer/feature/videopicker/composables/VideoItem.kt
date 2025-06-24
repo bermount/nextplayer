@@ -156,7 +156,7 @@ private fun VideoGridItem(
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
             color = if (isRecentlyPlayedVideo && preferences.markLastPlayedMedia) {
-                Color(0xFFFF0000)
+                MaterialTheme.colorScheme.primary
             } else {
                 ListItemDefaults.colors().headlineColor
             },
