@@ -77,12 +77,12 @@ private fun VideoListItem(
     ListItemComponent(
         colors = ListItemDefaults.colors(
             headlineColor = if (isRecentlyPlayedVideo && preferences.markLastPlayedMedia) {
-                MaterialTheme.colorScheme.primary
+                Color(0xFFFF0000)
             } else {
                 ListItemDefaults.colors().headlineColor
             },
             supportingColor = if (isRecentlyPlayedVideo && preferences.markLastPlayedMedia) {
-                MaterialTheme.colorScheme.primary
+                Color(0xFFFF9999)
             } else {
                 ListItemDefaults.colors().supportingTextColor
             },

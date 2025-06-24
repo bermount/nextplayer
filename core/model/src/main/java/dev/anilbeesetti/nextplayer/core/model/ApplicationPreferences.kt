@@ -8,7 +8,7 @@ data class ApplicationPreferences(
     val sortOrder: Sort.Order = Sort.Order.ASCENDING,
     val themeConfig: ThemeConfig = ThemeConfig.SYSTEM,
     val useHighContrastDarkTheme: Boolean = false,
-    val useDynamicColors: Boolean = true,
+    val useDynamicColors: Boolean = false,
     val markLastPlayedMedia: Boolean = true,
     val showFloatingPlayButton: Boolean = true,
     val excludeFolders: List<String> = emptyList(),
@@ -17,10 +17,10 @@ data class ApplicationPreferences(
 
     // Fields
     val showDurationField: Boolean = true,
-    val showExtensionField: Boolean = false,
+    val showExtensionField: Boolean = true,
     val showPathField: Boolean = true,
-    val showResolutionField: Boolean = false,
-    val showSizeField: Boolean = false,
+    val showResolutionField: Boolean = true,
+    val showSizeField: Boolean = true,
     val showThumbnailField: Boolean = true,
     val showPlayedProgress: Boolean = true,
 )

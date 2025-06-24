@@ -364,6 +364,7 @@ class PlayerService : MediaSessionService() {
             .build()
             .also {
                 it.addListener(playbackStateListener)
+                it.skipSilenceEnabled = playerPreferences.skipSilenceEnabled
             }
 
         try {
