@@ -219,7 +219,7 @@ private fun ThumbnailView(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color(0xFFFF9999)),
+                        .background(Color(0xFFFFDDDD)),
                 )
                 Box(
                     modifier = Modifier
