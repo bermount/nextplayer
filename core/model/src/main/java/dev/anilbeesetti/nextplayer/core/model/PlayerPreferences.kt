@@ -19,7 +19,7 @@ data class PlayerPreferences(
     val autoplay: Boolean = false,
     val autoPip: Boolean = true,
     val autoBackgroundPlay: Boolean = false,
-    val loopMode: LoopMode = LoopMode.ALL,
+    val loopMode: LoopMode = LoopMode.OFF,
     val skipSilenceEnabled: Boolean = true,
 
     // Controls (Gestures)
