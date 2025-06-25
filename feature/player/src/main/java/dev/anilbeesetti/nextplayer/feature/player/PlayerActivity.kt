@@ -915,7 +915,7 @@ override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         when (keyCode) {
             // Volume Controls (Existing)
             KeyEvent.KEYCODE_VOLUME_UP,
-            KeyEvent.KEYCODE_DPAD_UP,
+  //          KeyEvent.KEYCODE_DPAD_UP,
             -> {
                 if (!binding.playerView.isControllerFullyVisible || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
                     volumeManager.increaseVolume(playerPreferences.showSystemVolumePanel)
@@ -924,7 +924,7 @@ override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
                 }
             }
             KeyEvent.KEYCODE_VOLUME_DOWN,
-            KeyEvent.KEYCODE_DPAD_DOWN,
+//            KeyEvent.KEYCODE_DPAD_DOWN,
             -> {
                 if (!binding.playerView.isControllerFullyVisible || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
                     volumeManager.decreaseVolume(playerPreferences.showSystemVolumePanel)
@@ -954,7 +954,7 @@ override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
             }
 
             // Seek Controls
-            KeyEvent.KEYCODE_DPAD_LEFT,
+//            KeyEvent.KEYCODE_DPAD_LEFT,
             KeyEvent.KEYCODE_7,
             KeyEvent.KEYCODE_NUMPAD_7,
             KeyEvent.KEYCODE_MEDIA_REWIND,
@@ -969,7 +969,7 @@ override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
                 }
                 return true
             }
-            KeyEvent.KEYCODE_DPAD_RIGHT,
+//            KeyEvent.KEYCODE_DPAD_RIGHT,
             KeyEvent.KEYCODE_9,
             KeyEvent.KEYCODE_NUMPAD_9,
             KeyEvent.KEYCODE_MEDIA_FAST_FORWARD,
@@ -1022,13 +1022,13 @@ override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
             }
 
             // Show/Hide Controller
-            KeyEvent.KEYCODE_DPAD_CENTER -> {
-                if (!binding.playerView.isControllerFullyVisible) {
-                    binding.playerView.showController()
-                }
+//            KeyEvent.KEYCODE_DPAD_CENTER -> {
+//                if (!binding.playerView.isControllerFullyVisible) {
+//                    binding.playerView.showController()
+//                }
                 // Let the system handle it to press buttons on the controller
-                return super.onKeyDown(keyCode, event)
-            }
+//                return super.onKeyDown(keyCode, event)
+//            }
 
             // Back button behavior (Existing)
             KeyEvent.KEYCODE_BACK -> {
