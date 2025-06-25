@@ -986,37 +986,47 @@ override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
             }
 
             // Playback Speed Controls
-            KeyEvent.KEYCODE_Z -> {
-                changePlaybackSpeed(increase = false)
-                return true
-            }
-            KeyEvent.KEYCODE_X -> {
-                resetPlaybackSpeed()
-                return true
-            }
-            KeyEvent.KEYCODE_C -> {
-                changePlaybackSpeed(increase = true)
-                return true
-            }
+//            KeyEvent.KEYCODE_Z -> {
+//                changePlaybackSpeed(increase = false)
+//                return true
+//            }
+//            KeyEvent.KEYCODE_X -> {
+//                resetPlaybackSpeed()
+//                return true
+//            }
+//            KeyEvent.KEYCODE_C -> {
+//                changePlaybackSpeed(increase = true)
+//                return true
+//            }
 
             // Fast Playback (Hold-to-Seek)
-            KeyEvent.KEYCODE_1 -> {
+            KeyEvent.KEYCODE_1
+            KeyEvent.KEYCODE_NUMPAD_1
+            -> {
                 startFastPlayback(1)
                 return true
             }
-            KeyEvent.KEYCODE_2 -> {
+            KeyEvent.KEYCODE_2
+            KeyEvent.KEYCODE_NUMPAD_2
+            -> {
                 startFastPlayback(2)
                 return true
             }
-            KeyEvent.KEYCODE_3 -> {
+            KeyEvent.KEYCODE_3
+            KeyEvent.KEYCODE_NUMPAD_3
+            -> {
                 startFastPlayback(3)
                 return true
             }
-            KeyEvent.KEYCODE_4 -> {
+            KeyEvent.KEYCODE_4
+            KeyEvent.KEYCODE_NUMPAD_4
+            -> {
                 startFastPlayback(4)
                 return true
             }
-            KeyEvent.KEYCODE_5 -> {
+            KeyEvent.KEYCODE_5
+            KeyEvent.KEYCODE_NUMPAD_5
+            -> {
                 startFastPlayback(5)
                 return true
             }
