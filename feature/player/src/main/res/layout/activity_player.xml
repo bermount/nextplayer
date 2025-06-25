@@ -168,7 +168,7 @@
         android:layout_width="0dp"
         android:layout_height="3dp"
         android:layout_gravity="bottom"
-        android:background="@color/colorAccent" />
+        android:background="@android:color/red" />
 
 
 </FrameLayout>
