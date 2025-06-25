@@ -1296,13 +1296,13 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
                 (currentSpeed - 0.10f).coerceAtLeast(0.10f)
             }
             controller.setPlaybackSpeed(newSpeed)
-            showTopInfo(getString(coreUiR.string.playback_speed, "%.2f".format(newSpeed)))
+            showTopInfo(getString(coreUiR.string.fast_playback_speed, "%.2f".format(newSpeed)))
         }
     }
 
     private fun resetPlaybackSpeed() {
         mediaController?.setPlaybackSpeed(1.0f)
-        showTopInfo(getString(coreUiR.string.playback_speed, "1.00"))
+        showTopInfo(getString(coreUiR.string.fast_playback_speed, "1.00"))
     }
 
     private fun startFastPlayback(keyNumber: Int) {
