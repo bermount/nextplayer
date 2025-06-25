@@ -43,7 +43,8 @@
         android:background="@android:color/black"
         app:animation_enabled="false"
         app:show_buffering="always"
-        tools:foreground="@color/player_background"android:focusableInTouchMode="true"
+        tools:foreground="@color/player_background"
+        android:focusableInTouchMode="true"
         android:defaultFocusHighlightEnabled="false" />
 
     <LinearLayout
