@@ -915,7 +915,7 @@ override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         when (keyCode) {
             // Volume Controls (Existing)
             KeyEvent.KEYCODE_VOLUME_UP,
-  //          KeyEvent.KEYCODE_DPAD_UP,
+            KeyEvent.KEYCODE_DPAD_UP,
             -> {
                 if (!binding.playerView.isControllerFullyVisible || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
                     volumeManager.increaseVolume(playerPreferences.showSystemVolumePanel)
@@ -924,7 +924,7 @@ override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
                 }
             }
             KeyEvent.KEYCODE_VOLUME_DOWN,
-//            KeyEvent.KEYCODE_DPAD_DOWN,
+            KeyEvent.KEYCODE_DPAD_DOWN,
             -> {
                 if (!binding.playerView.isControllerFullyVisible || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
                     volumeManager.decreaseVolume(playerPreferences.showSystemVolumePanel)
@@ -954,7 +954,7 @@ override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
             }
 
             // Seek Controls
-//            KeyEvent.KEYCODE_DPAD_LEFT,
+            KeyEvent.KEYCODE_DPAD_LEFT,
             KeyEvent.KEYCODE_7,
             KeyEvent.KEYCODE_NUMPAD_7,
             KeyEvent.KEYCODE_MEDIA_REWIND,
@@ -969,7 +969,7 @@ override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
                 }
                 return true
             }
-//            KeyEvent.KEYCODE_DPAD_RIGHT,
+            KeyEvent.KEYCODE_DPAD_RIGHT,
             KeyEvent.KEYCODE_9,
             KeyEvent.KEYCODE_NUMPAD_9,
             KeyEvent.KEYCODE_MEDIA_FAST_FORWARD,
@@ -1080,20 +1080,25 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
             }
 
             // Hide speed indicator after a delay
-            KeyEvent.KEYCODE_Z,
-            KeyEvent.KEYCODE_X,
-            KeyEvent.KEYCODE_C,
-            -> {
-                hideTopInfo(HIDE_DELAY_MILLIS)
-                return true
-            }
+//            KeyEvent.KEYCODE_Z,
+//            KeyEvent.KEYCODE_X,
+//            KeyEvent.KEYCODE_C,
+//            -> {
+//                hideTopInfo(HIDE_DELAY_MILLIS)
+//                return true
+//            }
 
             // Stop Fast Playback on key release
             KeyEvent.KEYCODE_1,
+            KeyEvent.KEYCODE_NUMPAD_1,
             KeyEvent.KEYCODE_2,
+            KeyEvent.KEYCODE_NUMPAD_2,
             KeyEvent.KEYCODE_3,
+            KeyEvent.KEYCODE_NUMPAD_3,
             KeyEvent.KEYCODE_4,
+            KeyEvent.KEYCODE_NUMPAD_4,
             KeyEvent.KEYCODE_5,
+            KeyEvent.KEYCODE_NUMPAD_5,
             -> {
                 stopFastPlayback()
                 return true
