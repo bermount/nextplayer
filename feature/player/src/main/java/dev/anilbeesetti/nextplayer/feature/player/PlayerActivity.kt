@@ -1000,32 +1000,32 @@ override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
 //            }
 
             // Fast Playback (Hold-to-Seek)
-            KeyEvent.KEYCODE_1
-            KeyEvent.KEYCODE_NUMPAD_1
+            KeyEvent.KEYCODE_1,
+            KeyEvent.KEYCODE_NUMPAD_1,
             -> {
                 startFastPlayback(1)
                 return true
             }
-            KeyEvent.KEYCODE_2
-            KeyEvent.KEYCODE_NUMPAD_2
+            KeyEvent.KEYCODE_2,
+            KeyEvent.KEYCODE_NUMPAD_2,
             -> {
                 startFastPlayback(2)
                 return true
             }
-            KeyEvent.KEYCODE_3
-            KeyEvent.KEYCODE_NUMPAD_3
+            KeyEvent.KEYCODE_3,
+            KeyEvent.KEYCODE_NUMPAD_3,
             -> {
                 startFastPlayback(3)
                 return true
             }
-            KeyEvent.KEYCODE_4
-            KeyEvent.KEYCODE_NUMPAD_4
+            KeyEvent.KEYCODE_4,
+            KeyEvent.KEYCODE_NUMPAD_4,
             -> {
                 startFastPlayback(4)
                 return true
             }
-            KeyEvent.KEYCODE_5
-            KeyEvent.KEYCODE_NUMPAD_5
+            KeyEvent.KEYCODE_5,
+            KeyEvent.KEYCODE_NUMPAD_5,
             -> {
                 startFastPlayback(5)
                 return true
