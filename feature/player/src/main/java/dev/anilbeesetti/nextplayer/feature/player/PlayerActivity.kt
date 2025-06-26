@@ -1029,11 +1029,6 @@ override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
             -> {
                 startFastPlayback(5)
                 return true
-            KeyEvent.KEYCODE_6,
-            KeyEvent.KEYCODE_NUMPAD_6,
-            -> {
-                startFastPlayback(6)
-                return true
             }
 
             // Show/Hide Controller
@@ -1104,8 +1099,6 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
             KeyEvent.KEYCODE_NUMPAD_4,
             KeyEvent.KEYCODE_5,
             KeyEvent.KEYCODE_NUMPAD_5,
-            KeyEvent.KEYCODE_6,
-            KeyEvent.KEYCODE_NUMPAD_6,
             -> {
                 stopFastPlayback()
                 return true
@@ -1333,11 +1326,10 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
             isFastPlaybackFromKeyboardActive = true
             originalPlaybackSpeed = controller.playbackParameters.speed
             val targetSpeed = when (keyNumber) {
-                1 -> (originalPlaybackSpeed + playerPreferences.longPressControlsSpeed) / 3f
-                2 -> (originalPlaybackSpeed + playerPreferences.longPressControlsSpeed) *2 / 3f
-                3 -> playerPreferences.longPressControlsSpeed
-                4 -> playerPreferences.longPressControlsSpeed + 0.25f
-                5 -> playerPreferences.longPressControlsSpeed + 0.5f
+                1 -> (originalPlaybackSpeed + playerPreferences.longPressControlsSpeed) / 2f
+                2 -> playerPreferences.longPressControlsSpeed
+                3 -> playerPreferences.longPressControlsSpeed + 0.25f
+                4 -> playerPreferences.longPressControlsSpeed + 0.5f
                 else -> playerPreferences.longPressControlsSpeed + 0.75f
             }
             showTopInfo(getString(coreUiR.string.fast_playback_speed, targetSpeed))
