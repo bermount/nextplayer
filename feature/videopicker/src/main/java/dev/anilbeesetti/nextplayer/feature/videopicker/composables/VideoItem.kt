@@ -33,6 +33,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.min
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -108,7 +109,7 @@ private fun VideoListItem(
                 Text(
                     text = video.path.substringBeforeLast("/"),
                     maxLines = 1,
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 8.sp),,
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 8.sp),
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(vertical = 2.dp),
                 )
