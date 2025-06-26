@@ -1334,8 +1334,8 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
             isFastPlaybackFromKeyboardActive = true
             originalPlaybackSpeed = controller.playbackParameters.speed
             val targetSpeed = when (keyNumber) {
-                1 -> (originalPlaybackSpeed + playerPreferences.longPressControlsSpeed) / 3f
-                2 -> (originalPlaybackSpeed + playerPreferences.longPressControlsSpeed) *2 / 3f
+                1 -> (2 * originalPlaybackSpeed + 1 * playerPreferences.longPressControlsSpeed) / 3f
+                2 -> (1 * originalPlaybackSpeed + 2 * playerPreferences.longPressControlsSpeed) / 3f
                 3 -> playerPreferences.longPressControlsSpeed
                 4 -> playerPreferences.longPressControlsSpeed + 0.25f
                 5 -> playerPreferences.longPressControlsSpeed + 0.5f
