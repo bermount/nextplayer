@@ -98,7 +98,7 @@ private fun VideoListItem(
         headlineContent = {
             Text(
                 text = if (preferences.showExtensionField) video.nameWithExtension else video.displayName,
-                maxLines = 2,
+                maxLines = 3,
                 style = MaterialTheme.typography.titleMedium,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -107,8 +107,8 @@ private fun VideoListItem(
             if (preferences.showPathField) {
                 Text(
                     text = video.path.substringBeforeLast("/"),
-                    maxLines = 2,
-                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 1,
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 8.sp),,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(vertical = 2.dp),
                 )
