@@ -263,9 +263,9 @@ class PlayerActivity : AppCompatActivity() {
         // Adjust progress bar thickness based on screen density
         val density = resources.displayMetrics.density
         val heightInDp = when {
-            density <= 1.0f -> 3f // For low-resolution screens (mdpi, ldpi), make it 5dp thick
-            density <= 1.5f -> 2f // For medium-resolution screens (hdpi), make it 4dp thick
-            else -> 1f            // For high-resolution screens (xhdpi and up), keep it 3dp thick
+            density <= 1.0f -> 2f // For low-resolution screens (mdpi, ldpi)
+            density <= 1.5f -> 1.5f // For medium-resolution screens (hdpi)
+            else -> 1f            // For high-resolution screens (xhdpi and up)
         }
         thinProgress.layoutParams.height = TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP,
