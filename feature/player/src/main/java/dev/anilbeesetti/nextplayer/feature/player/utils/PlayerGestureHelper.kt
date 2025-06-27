@@ -118,7 +118,7 @@ class PlayerGestureHelper(
         },
     )
 
-    private val SEEK_GESTURE_THRESHOLD_PX = 95f
+    private val SEEK_GESTURE_THRESHOLD_PX = 85f
     
     private val seekGestureDetector = GestureDetector(
         playerView.context,
@@ -167,7 +167,6 @@ class PlayerGestureHelper(
                         position = seekStart + seekChange
                         seekBack(positionMs = position, shouldFastSeek = shouldFastSeek)
                     }
-                    updateThinProgressBar(position, it)
                     activity.showPlayerInfo(
                         info = Utils.formatDurationMillis(this.currentPosition),
                         subInfo = "[${Utils.formatDurationMillisSign(seekChange)}]",
