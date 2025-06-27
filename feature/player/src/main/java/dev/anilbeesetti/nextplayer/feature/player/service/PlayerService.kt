@@ -142,6 +142,7 @@ class PlayerService : MediaSessionService() {
 
                 else -> return
             }
+            shouldSkipNextPositionSave = false
         }
 
         override fun onTracksChanged(tracks: Tracks) {
