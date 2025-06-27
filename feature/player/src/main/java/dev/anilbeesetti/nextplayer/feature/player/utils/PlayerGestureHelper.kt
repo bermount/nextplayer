@@ -118,7 +118,7 @@ class PlayerGestureHelper(
         },
     )
 
-    private val SEEK_GESTURE_THRESHOLD_PX = 95f
+    private val SEEK_GESTURE_THRESHOLD_PX = 85f
     
     private val seekGestureDetector = GestureDetector(
         playerView.context,
