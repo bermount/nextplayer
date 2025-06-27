@@ -53,7 +53,7 @@ class PlayerGestureHelper(
     private var currentPlaybackSpeed: Float? = null
     private var isLongPressActive: Boolean = false
 
-    private val SEEK_GESTURE_THRESHOLD_PX = 95f
+    private val SEEK_GESTURE_THRESHOLD_PX = 85f
 
     private val tapGestureDetector = GestureDetector(playerView.context,
         object : GestureDetector.SimpleOnGestureListener() {
