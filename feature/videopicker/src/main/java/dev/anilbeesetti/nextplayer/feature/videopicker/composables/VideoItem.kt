@@ -111,7 +111,7 @@ private fun VideoListItem(
                     maxLines = 1,
                     style = MaterialTheme.typography.bodySmall.copy(fontSize = 8.sp),
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(vertical = 2.dp),
+                    modifier = Modifier.padding(vertical = 0.dp),
                 )
             }
             FlowRow(
