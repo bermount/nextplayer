@@ -167,6 +167,7 @@ class PlayerGestureHelper(
                         position = seekStart + seekChange
                         seekBack(positionMs = position, shouldFastSeek = shouldFastSeek)
                     }
+                    updateThinProgressBar(newPosition, duration)
                     activity.showPlayerInfo(
                         info = Utils.formatDurationMillis(this.currentPosition),
                         subInfo = "[${Utils.formatDurationMillisSign(seekChange)}]",
