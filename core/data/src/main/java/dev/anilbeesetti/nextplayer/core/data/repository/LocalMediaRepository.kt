@@ -47,14 +47,14 @@ class LocalMediaRepository @Inject constructor(
         }
     }
 
-    override fun updateMediumPosition(uri: String, position: Long) {
+    override fun updateMediumPosition(filename: String, position: Long) {
         applicationScope.launch {
-            val duration = mediumDao.get(uri)?.duration ?: position.plus(1)
+            val duration = mediumDao.get(filename)?.duration ?: position.plus(1)
             mediumDao.updateMediumPosition(
-                uri = uri,
+                filename = filename,
                 position = position.takeIf { it < duration } ?: Long.MIN_VALUE.plus(1),
             )
-            mediumDao.updateMediumLastPlayedTime(uri, System.currentTimeMillis())
+            mediumDao.updateMediumLastPlayedTime(filename, System.currentTimeMillis())
         }
     }
 

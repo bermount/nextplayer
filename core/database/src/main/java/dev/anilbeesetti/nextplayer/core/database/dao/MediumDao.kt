@@ -77,9 +77,9 @@ interface MediumDao {
         lastPlayedTime: Long?,
     )
 
-    @Query("UPDATE OR REPLACE media SET playback_position = :position WHERE uri = :uri")
+    @Query("UPDATE OR REPLACE media SET playback_position = :position WHERE filename = :filename")
     suspend fun updateMediumPosition(
-        uri: String,
+        filename: String,
         position: Long,
     )
 
