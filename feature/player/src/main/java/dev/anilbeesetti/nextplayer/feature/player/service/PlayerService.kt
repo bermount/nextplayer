@@ -83,11 +83,14 @@ class PlayerService : MediaSessionService() {
     private var isMediaItemReady = false
     private var currentVideoState: VideoState? = null
 
+    private var shouldSkipNextPositionSave = false
+
     private val playbackStateListener = object : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             super.onMediaItemTransition(mediaItem, reason)
             if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT) return
             if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO && !playerPreferences.autoplay) {
+                shouldSkipNextPositionSave = true
                 mediaSession?.player?.stop()
                 return
             }
@@ -121,10 +124,12 @@ class PlayerService : MediaSessionService() {
                 -> {
                     val newMediaItem = newPosition.mediaItem
                     if (newMediaItem != null && oldMediaItem != newMediaItem) {
-                        mediaRepository.updateMediumPosition(
-                            uri = oldMediaItem.mediaId,
-                            position = oldPosition.positionMs.takeIf { reason == DISCONTINUITY_REASON_SEEK } ?: C.TIME_UNSET,
-                        )
+                        if (!shouldSkipNextPositionSave) {
+                            mediaRepository.updateMediumPosition(
+                                uri = oldMediaItem.mediaId,
+                                position = oldPosition.positionMs.takeIf { reason == DISCONTINUITY_REASON_SEEK } ?: C.TIME_UNSET,
+                            )
+                        }
                     }
                 }
 
