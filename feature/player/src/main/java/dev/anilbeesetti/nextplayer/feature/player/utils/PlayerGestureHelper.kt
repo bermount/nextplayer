@@ -167,7 +167,7 @@ class PlayerGestureHelper(
                         position = seekStart + seekChange
                         seekBack(positionMs = position, shouldFastSeek = shouldFastSeek)
                     }
-                    mediaController?.duration?.let { updateThinProgressBar(position, it) }
+                    updateThinProgressBar(position, it)
                     activity.showPlayerInfo(
                         info = Utils.formatDurationMillis(this.currentPosition),
                         subInfo = "[${Utils.formatDurationMillisSign(seekChange)}]",
