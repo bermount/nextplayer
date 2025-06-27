@@ -92,6 +92,7 @@ import dev.anilbeesetti.nextplayer.feature.player.service.PlayerService
 import dev.anilbeesetti.nextplayer.feature.player.service.addSubtitleTrack
 import dev.anilbeesetti.nextplayer.feature.player.service.getAudioSessionId
 import dev.anilbeesetti.nextplayer.feature.player.service.getSkipSilenceEnabled
+import dev.anilbeesetti.nextplayer.feature.player.service.stopPlayerSession
 import dev.anilbeesetti.nextplayer.feature.player.service.switchAudioTrack
 import dev.anilbeesetti.nextplayer.feature.player.service.switchSubtitleTrack
 import dev.anilbeesetti.nextplayer.feature.player.utils.BrightnessManager
@@ -129,6 +130,10 @@ class PlayerActivity : AppCompatActivity() {
     private var hideVolumeIndicatorJob: Job? = null
     private var hideBrightnessIndicatorJob: Job? = null
     private var hideInfoLayoutJob: Job? = null
+    
+    private lateinit var thinProgress: View
+    private var progressUpdateJob: Job? = null
+
 
     private var playInBackground: Boolean = false
     private var isIntentNew: Boolean = true
@@ -251,6 +256,21 @@ class PlayerActivity : AppCompatActivity() {
         loopModeButton = binding.playerView.findViewById(R.id.btn_loop_mode)
         extraControls = binding.playerView.findViewById(R.id.extra_controls)
 
+        thinProgress = binding.thinProgress
+
+        // Adjust progress bar thickness based on screen density
+        val density = resources.displayMetrics.density
+        val heightInDp = when {
+            density <= 1.0f -> 2f // For low-resolution screens (mdpi, ldpi)
+//            density <= 1.5f -> 2f // For medium-resolution screens (hdpi)
+            else -> 1f            // For high-resolution screens (xhdpi and up)
+        }
+        thinProgress.layoutParams.height = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            heightInDp,
+            resources.displayMetrics
+        ).toInt()
+
         if (playerPreferences.controlButtonsPosition == ControlButtonsPosition.RIGHT) {
             extraControls.gravity = Gravity.END
         }
@@ -276,6 +296,8 @@ class PlayerActivity : AppCompatActivity() {
                             subInfo = "[${Utils.formatDurationMillisSign(position - scrubStartPosition)}]",
                         )
                     }
+                    // Add this line
+                    mediaController?.duration?.let { updateThinProgressBar(position, it) }
                 }
 
                 override fun onScrubMove(timeBar: TimeBar, position: Long) {
@@ -284,6 +306,8 @@ class PlayerActivity : AppCompatActivity() {
                         info = Utils.formatDurationMillis(position),
                         subInfo = "[${Utils.formatDurationMillisSign(position - scrubStartPosition)}]",
                     )
+                    // Add this line
+                    mediaController?.duration?.let { updateThinProgressBar(position, it) }
                 }
 
                 override fun onScrubStop(timeBar: TimeBar, position: Long, canceled: Boolean) {
@@ -291,6 +315,9 @@ class PlayerActivity : AppCompatActivity() {
                     scrubStartPosition = -1L
                     if (isPlayingOnScrubStart) {
                         mediaController?.play()
+                    } else {
+                        // Manually update one last time if player is paused
+                        mediaController?.duration?.let { updateThinProgressBar(position, it) }
                     }
                 }
             },
@@ -368,13 +395,12 @@ class PlayerActivity : AppCompatActivity() {
                 viewModel.skipSilenceEnabled = getSkipSilenceEnabled()
             }
             removeListener(playbackStateListener)
+            stopProgressUpdater()
         }
         if (subtitleFileLauncherLaunchedForMediaItem != null) {
             mediaController?.pause()
         } else if (!playerPreferences.autoBackgroundPlay && !playInBackground) {
-            mediaController?.run {
-                stop()
-            }
+            mediaController?.stopPlayerSession()
         }
         controllerFuture?.run {
             MediaController.releaseFuture(this)
@@ -774,11 +800,17 @@ class PlayerActivity : AppCompatActivity() {
             videoTitleTextView.text = mediaMetadata.title
         }
 
-        override fun onIsPlayingChanged(isPlaying: Boolean) {
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
             super.onIsPlayingChanged(isPlaying)
             updateKeepScreenOnFlag()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && isPipSupported) {
                 updatePictureInPictureParams()
+            }
+            // Add this if/else block
+            if (isPlaying) {
+                startProgressUpdater()
+            } else {
+                stopProgressUpdater()
             }
         }
 
@@ -831,10 +863,24 @@ class PlayerActivity : AppCompatActivity() {
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {
+            println("HELLO: $playbackState")
             super.onPlaybackStateChanged(playbackState)
             when (playbackState) {
-                Player.STATE_ENDED, Player.STATE_IDLE -> {
+                Player.STATE_ENDED -> {
+                    isPlaybackFinished = true
+                    stopProgressUpdater()
+                    // Set progress to full width on completion
+                    thinProgress.layoutParams.width = resources.displayMetrics.widthPixels
+                    thinProgress.requestLayout()
+                    finish()
+                }
+                Player.STATE_IDLE -> {
                     isPlaybackFinished = mediaController?.playbackState == Player.STATE_ENDED
+                    // Add these lines to stop and reset the progress bar
+                    stopProgressUpdater()
+                    thinProgress.visibility = View.GONE
+                    thinProgress.layoutParams.width = 0
+                    thinProgress.requestLayout()
                     finish()
                 }
 
@@ -858,6 +904,7 @@ class PlayerActivity : AppCompatActivity() {
             )
             setResult(Activity.RESULT_OK, result)
         }
+        stopProgressUpdater()
         super.finish()
     }
 
@@ -1109,6 +1156,9 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun applyVideoZoom(videoZoom: VideoZoom, showInfo: Boolean) {
         viewModel.setVideoZoom(videoZoom)
+        mediaController?.currentMediaItem?.mediaId?.let {
+            viewModel.updateMediumZoom(uri = it, zoom = 1f)
+        }
         resetExoContentFrameWidthAndHeight()
         when (videoZoom) {
             VideoZoom.BEST_FIT -> {
@@ -1143,6 +1193,56 @@ class PlayerActivity : AppCompatActivity() {
                 delay(HIDE_DELAY_MILLIS)
                 binding.infoLayout.visibility = View.GONE
             }
+        }
+    }
+
+    private fun startProgressUpdater() {
+        // Cancel any existing job to avoid multiple updaters running
+        stopProgressUpdater()
+        progressUpdateJob = lifecycleScope.launch {
+            while (true) {
+                mediaController?.let { controller ->
+                    // Ensure duration is positive to avoid division by zero
+                    if (controller.duration > 0) {
+                        val currentPosition = controller.currentPosition
+                        val duration = controller.duration
+                        val screenWidth = resources.displayMetrics.widthPixels
+
+                        // Calculate the width of the progress bar
+                        val progressWidth = (currentPosition.toFloat() / duration * screenWidth).toInt()
+
+                        // Update the UI on the main thread
+                        withContext(Dispatchers.Main) {
+                            thinProgress.visibility = View.VISIBLE
+                            val params = thinProgress.layoutParams
+                            params.width = progressWidth
+                            thinProgress.layoutParams = params
+                        }
+                    }
+                }
+                delay(250) // Update interval (e.g., 4 times a second)
+            }
+        }
+    }
+
+    private fun stopProgressUpdater() {
+        progressUpdateJob?.cancel()
+        progressUpdateJob = null
+    }
+
+    /**
+     * Updates the thin progress bar manually, useful for immediate feedback like during seeking.
+     */
+    private fun updateThinProgressBar(position: Long, duration: Long) {
+        if (duration > 0) {
+            val screenWidth = resources.displayMetrics.widthPixels
+            val progressWidth = (position.toFloat() / duration * screenWidth).toInt()
+            val params = thinProgress.layoutParams
+            params.width = progressWidth
+            thinProgress.layoutParams = params
+            thinProgress.visibility = View.VISIBLE
+        } else {
+            thinProgress.visibility = View.GONE
         }
     }
 
