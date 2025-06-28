@@ -83,7 +83,7 @@ android {
 dependencies {
 
     implementation(project(":core:common"))
-    implementation(project(":core:data"))
+    api(project(":core:data"))
     implementation(project(":core:media"))
     implementation(project(":core:model"))
     implementation(project(":core:ui"))
