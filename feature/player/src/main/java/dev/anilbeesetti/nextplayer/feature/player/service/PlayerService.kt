@@ -274,6 +274,7 @@ class PlayerService : MediaSessionService() {
                         val textTracks = player.currentTracks.groups.filter {
                             it.type == C.TRACK_TYPE_TEXT && it.isSupported
                         }
+                        val filename = getFilenameFromUri(currentMediaItem.mediaId.toUri()) ?: currentMediaItem.mediaId
 
                         mediaRepository.updateMediumPosition(
                             uri = currentMediaItem.mediaId,
