@@ -2,6 +2,7 @@ package dev.anilbeesetti.nextplayer
 
 import android.graphics.Color
 import android.os.Bundle
+import android.content.pm.PackageManager
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -38,9 +39,108 @@ import dev.anilbeesetti.nextplayer.navigation.mediaNavGraph
 import dev.anilbeesetti.nextplayer.navigation.settingsNavGraph
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var preferencesRepository: PreferencesRepository // Inject the preferences repository
+    
+    // This is the new way to handle results from an activity (like the folder picker)
+    private val requestFolderPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.data?.let { uri ->
+                handleSelectedFolderUri(uri)
+            }
+        } else {
+            Timber.d("User cancelled folder selection for playback sync.")
+            // Optional: You could show a Toast message to the user that they need to select a folder
+            // or that syncing won't happen without it.
+        }
+    }
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // ... your existing onCreate logic, like setContentView or setContent
+        
+        // Call this function when the activity is created to check/request the sync folder
+        checkAndRequestSyncFolder()
+    }
+    
+    /**
+    * Checks if a sync folder is already set and has persistent permissions.
+    * If not, it launches the folder picker.
+    */
+    private fun checkAndRequestSyncFolder() {
+        lifecycleScope.launch {
+            val currentSyncFolderUri = preferencesRepository.playerPreferences.first().syncPlaybackPositionsFolderUri
+            if (currentSyncFolderUri.isBlank()) {
+                Timber.d("No sync folder URI found in preferences. Launching folder picker.")
+                launchFolderPicker()
+            } else {
+                val uri = currentSyncFolderUri.toUri()
+                // Check if the persisted URI permission is still valid
+                if (!checkUriPermission(uri)) {
+                    Timber.d("Persisted URI permission revoked for $currentSyncFolderUri. Launching folder picker again.")
+                    launchFolderPicker() // Permissions lost, prompt again
+                } else {
+                    Timber.d("Sync folder already set and permissions confirmed: $currentSyncFolderUri")
+                }
+            }
+        }
+    }
+    
+    /**
+    * Launches the Storage Access Framework (SAF) document tree picker.
+    */
+    private fun launchFolderPicker() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+        // Optionally, you can add an initial URI to guide the user:
+        // intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, someDefaultUri)
+        requestFolderPermissionLauncher.launch(intent)
+    }
+    
+    /**
+    * Handles the URI received from the SAF folder picker.
+    * Takes persistable URI permissions and saves the URI to preferences.
+    */
+    private fun handleSelectedFolderUri(uri: Uri) {
+        try {
+            // Take persistable URI permissions. This is crucial so your app retains access
+            // to this folder across app restarts and device reboots.
+            contentResolver.takePersistableUriPermission(
+                uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            )
+            
+            // Save this URI string to your PreferencesRepository
+            lifecycleScope.launch {
+                preferencesRepository.setSyncPlaybackPositionsFolderUri(uri.toString())
+                Timber.d("Successfully saved sync folder URI: $uri")
+                // You might want to trigger an initial sync after the folder is set.
+                // For example, mediaRepository.syncAllPlaybackPositionsFromFiles() if you implement that.
+            }
+        } catch (e: SecurityException) {
+            Timber.e(e, "Failed to persist URI permission for $uri. User might have denied permanent access.")
+            // Inform the user that the folder couldn't be set for syncing due to permission issues.
+        }
+    }
+    
+    /**
+    * Helper function to check if your app still has granted permissions for a given URI.
+    */
+    private fun checkUriPermission(uri: Uri): Boolean {
+        return try {
+            val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            contentResolver.checkUriPermission(uri, android.os.Process.myPid(), android.os.Process.myUid(), flags) == PackageManager.PERMISSION_GRANTED
+        } catch (e: Exception) {
+            Timber.e(e, "Error checking URI permission.")
+            false
+        }
+    }
 
     @Inject
     lateinit var synchronizer: MediaSynchronizer
