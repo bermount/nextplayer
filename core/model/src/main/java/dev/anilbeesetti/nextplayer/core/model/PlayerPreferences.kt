@@ -50,4 +50,6 @@ data class PlayerPreferences(
 
     // Decoder Preferences
     val decoderPriority: DecoderPriority = DecoderPriority.PREFER_DEVICE,
+
+    val syncPlaybackPositionsFolderUri: String = "",
 )
