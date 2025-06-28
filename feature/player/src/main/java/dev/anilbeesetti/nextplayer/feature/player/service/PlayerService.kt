@@ -85,6 +85,10 @@ class PlayerService : MediaSessionService() {
 
     private var shouldSkipNextPositionSave = false
 
+    private fun getFilenameFromUri(uri: Uri): String? {
+        return uri.lastPathSegment
+    }
+
     private val playbackStateListener = object : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             super.onMediaItemTransition(mediaItem, reason)
@@ -97,20 +101,30 @@ class PlayerService : MediaSessionService() {
             isMediaItemReady = false
             if (mediaItem != null) {
                 serviceScope.launch {
-                    val filename = getFilenameFromUri(mediaItem.mediaId.toUri()) ?: mediaItem.mediaId
+                    // Get filename for syncing purposes
+                    val mediaUri = mediaItem.mediaId.toUri()
+                    val filename = getFilenameFromUri(mediaUri) ?: mediaItem.mediaId // Fallback to mediaId if filename extraction fails
+                    
+                    // Sync playback position from DB and JSON, and get the most recent one
                     val syncedPosition = mediaRepository.syncAndGetPlaybackPosition(mediaItem.mediaId, filename)
                     
+                    // Get other video state information (speed, tracks etc.)
                     currentVideoState = mediaRepository.getVideoState(mediaItem.mediaId)
+                    
+                    // Set playback speed
                     mediaSession?.player?.setPlaybackSpeed(
                         currentVideoState?.playbackSpeed ?: playerPreferences.defaultPlaybackSpeed,
                     )
-                    
-                    // Use the synced position if available and resume is enabled
+                    // Seek to the synced position if available and resume is enabled
                     val positionToSeek = syncedPosition?.takeIf { playerPreferences.resume == Resume.YES }
-                    if (positionToSeek != null && positionToSeek > 0) {
+                    if (positionToSeek != null && positionToSeek > 0) { // Only seek if position is greater than 0
                         mediaSession?.player?.seekTo(positionToSeek)
+                    } else if (playerPreferences.resume == Resume.NO) {
+                        // If resume is disabled, ensure we start from 0 or the player's default start position
+                        mediaSession?.player?.seekTo(0)
                     }
                     
+                    // Restore audio/subtitle tracks if rememberSelections is enabled
                     currentVideoState?.let { state ->
                         if (!playerPreferences.rememberSelections) return@let
                         state.audioTrackIndex?.let { mediaSession?.player?.switchTrack(C.TRACK_TYPE_AUDIO, it) }
@@ -119,7 +133,7 @@ class PlayerService : MediaSessionService() {
                 }
             }
         }
-
+        
         override fun onPositionDiscontinuity(
             oldPosition: Player.PositionInfo,
             newPosition: Player.PositionInfo,
@@ -185,11 +199,15 @@ class PlayerService : MediaSessionService() {
             }
 
             if (playbackState == Player.STATE_READY) {
-                mediaSession?.player?.let {
-                    mediaRepository.updateMediumLastPlayedTime(
-                        uri = it.currentMediaItem?.mediaId ?: return@let,
-                        lastPlayedTime = System.currentTimeMillis(),
-                    )
+                mediaSession?.player?.currentMediaItem?.mediaId?.toUri()?.let { mediaUri ->
+                    val filename = getFilenameFromUri(mediaUri)
+                    if (filename != null) {
+                        mediaRepository.updateMediumPosition(
+                            uri = mediaUri.toString(),
+                            filename = filename,
+                            position = it,
+                        )
+                    }
                 }
             }
         }
