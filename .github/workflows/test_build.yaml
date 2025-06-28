@@ -33,7 +33,7 @@ jobs:
           gradle-home-cache-cleanup: true
 
       - name: Build Project with Gradle
-        run: ./gradlew assembleDebug --info --scan
+        run: ./gradlew assembleDebug --info --scan -Dgradle.publish.agreement.accepted=true -Dgradle.enterprise.access.key="dummy"
 
       - name: Rename APK with date and time and export variables
         id: rename
