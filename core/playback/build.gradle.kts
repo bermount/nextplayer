@@ -33,6 +33,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
+    implementation("androidx.documentfile:documentfile:1.0.1")
     implementation(libs.timber)
 
     // Hilt
