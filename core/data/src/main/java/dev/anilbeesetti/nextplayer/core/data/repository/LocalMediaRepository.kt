@@ -54,63 +54,63 @@ class LocalMediaRepository @Inject constructor(
 
     override fun updateMediumPosition(uri: String, filename: String, position: Long) {
         applicationScope.launch {
+            // Ensure position is not greater than duration to avoid issues
             val duration = mediumDao.get(uri)?.duration ?: position.plus(1)
-            val finalPosition = position.takeIf { it < duration } ?: Long.MIN_VALUE.plus(1)
+            val finalPosition = position.takeIf { it < duration } ?: C.TIME_UNSET // Use C.TIME_UNSET for "not set"
             val timestamp = System.currentTimeMillis()
             
-            // Update local database
+            // 1. Update local database
             mediumDao.updatePositionAndTimestamp(uri, finalPosition, timestamp)
-            mediumDao.updateMediumLastPlayedTime(uri, timestamp)
+            mediumDao.updateMediumLastPlayedTime(uri, timestamp) // Keep last played time updated
             
-            // Update external JSON
+            // 2. Update external JSON if sync folder is set
             val syncFolder = preferencesRepository.playerPreferences.first().syncPlaybackPositionsFolderUri
             if (syncFolder.isNotBlank()) {
-                val allPositions = jsonPlaybackSyncManager.readPlaybackPositions(syncFolder).toMutableList()
-                val existingIndex = allPositions.indexOfFirst { it.filename == filename }
                 val newPositionEntry = PlaybackPosition(filename, finalPosition, timestamp)
-                
-                if (existingIndex != -1) {
-                    allPositions[existingIndex] = newPositionEntry
-                } else {
-                    allPositions.add(newPositionEntry)
-                }
-                jsonPlaybackSyncManager.writePlaybackPositions(syncFolder, allPositions)
+                // Pass a list containing only the updated entry to the sync manager
+                // The sync manager will handle merging this with the existing JSON content.
+                jsonPlaybackSyncManager.writePlaybackPositions(syncFolder, listOf(newPositionEntry))
             }
         }
     }
 
- 
     override suspend fun syncAndGetPlaybackPosition(uri: String, filename: String): Long? {
         val syncFolder = preferencesRepository.playerPreferences.first().syncPlaybackPositionsFolderUri
+        
+        // If no sync folder is set, just return the position from the local database
         if (syncFolder.isBlank()) {
             return mediumDao.get(uri)?.playbackPosition
         }
         
         val dbEntity = mediumDao.get(uri)
         val dbPosition = dbEntity?.playbackPosition
-        val dbTimestamp = dbEntity?.positionLastUpdated ?: 0L
+        val dbTimestamp = dbEntity?.positionLastUpdated ?: 0L // Default to 0 if null
         
         val jsonPositions = jsonPlaybackSyncManager.readPlaybackPositions(syncFolder)
         val jsonEntry = jsonPositions.find { it.filename == filename }
         val jsonPosition = jsonEntry?.position
-        val jsonTimestamp = jsonEntry?.lastUpdated ?: 0L
+        val jsonTimestamp = jsonEntry?.lastUpdated ?: 0L // Default to 0 if null
         
-        // Compare and sync
+        // Compare timestamps to decide which source is more recent
         when {
-            // JSON is newer, update DB
+            // Case 1: JSON data is newer than DB data (or DB has no timestamp for this item)
             jsonTimestamp > dbTimestamp && jsonPosition != null -> {
+                Timber.d("JSON is newer for $filename. Syncing JSON to DB. Pos: $jsonPosition")
                 mediumDao.updatePositionAndTimestamp(uri, jsonPosition, jsonTimestamp)
                 return jsonPosition
             }
-            // DB is newer, update JSON
+            // Case 2: DB data is newer than JSON data
             dbTimestamp > jsonTimestamp && dbPosition != null -> {
-                val newPositions = jsonPositions.filterNot { it.filename == filename }.toMutableList()
-                newPositions.add(PlaybackPosition(filename, dbPosition, dbTimestamp))
-                jsonPlaybackSyncManager.writePlaybackPositions(syncFolder, newPositions)
+                Timber.d("DB is newer for $filename. Syncing DB to JSON. Pos: $dbPosition")
+                // Create a list with just this updated entry
+                val updatedJsonEntry = PlaybackPosition(filename, dbPosition, dbTimestamp)
+                jsonPlaybackSyncManager.writePlaybackPositions(syncFolder, listOf(updatedJsonEntry))
                 return dbPosition
             }
-            // No conflict or no data, return DB value
+            // Case 3: Timestamps are equal or no data in either, or data matches.
+            // In this case, prefer the DB value as the primary source.
             else -> {
+                Timber.d("Timestamps are equal or no new data for $filename. Using DB position: $dbPosition")
                 return dbPosition
             }
         }
