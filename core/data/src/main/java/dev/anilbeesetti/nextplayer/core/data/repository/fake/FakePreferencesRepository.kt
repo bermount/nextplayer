@@ -30,8 +30,8 @@ class FakePreferencesRepository : PreferencesRepository {
     }
 
     override suspend fun setSyncPlaybackPositionsFolderUri(uri: String) {
-        dataStore.updateData { preferences ->
-            preferences.copy(syncPlaybackPositionsFolderUri = uri)
+        playerPreferencesStateFlow.update { currentPreferences ->
+            currentPreferences.copy(syncPlaybackPositionsFolderUri = uri)
         }
     }
 }
