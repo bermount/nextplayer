@@ -6,8 +6,11 @@ import dev.anilbeesetti.nextplayer.core.model.PlayerPreferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class FakePreferencesRepository : PreferencesRepository {
+@Singleton
+class FakePreferencesRepository @Inject constructor() : PreferencesRepository {
 
     private val applicationPreferencesStateFlow = MutableStateFlow(ApplicationPreferences())
     private val playerPreferencesStateFlow = MutableStateFlow(PlayerPreferences())
