@@ -192,27 +192,28 @@ class PlayerService : MediaSessionService() {
 
         override fun onPlaybackStateChanged(playbackState: Int) {
             super.onPlaybackStateChanged(playbackState)
-
+            
             if (playbackState == Player.STATE_ENDED || playbackState == Player.STATE_IDLE) {
                 mediaSession?.player?.trackSelectionParameters = TrackSelectionParameters.DEFAULT
                 mediaSession?.player?.setPlaybackSpeed(playerPreferences.defaultPlaybackSpeed)
             }
-
+            
             if (playbackState == Player.STATE_READY) {
                 mediaSession?.player?.currentMediaItem?.mediaId?.toUri()?.let { mediaUri ->
                     val filename = getFilenameFromUri(mediaUri)
+                    val currentPosition = mediaSession?.player?.currentPosition ?: 0L
                     if (filename != null) {
                         mediaRepository.updateMediumPosition(
                             uri = mediaUri.toString(),
                             filename = filename,
-                            position = it,
+                            position = currentPosition,
                         )
                     }
                 }
             }
         }
     }
-
+    
     private val mediaSessionCallback = object : MediaSession.Callback {
         override fun onConnect(
             session: MediaSession,
@@ -276,6 +277,7 @@ class PlayerService : MediaSessionService() {
 
                         mediaRepository.updateMediumPosition(
                             uri = currentMediaItem.mediaId,
+                            filename = filename,
                             position = player.currentPosition,
                         )
                         mediaRepository.updateMediumSubtitleTrack(
