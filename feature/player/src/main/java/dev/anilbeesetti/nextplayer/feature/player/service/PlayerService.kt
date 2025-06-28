@@ -97,14 +97,24 @@ class PlayerService : MediaSessionService() {
             isMediaItemReady = false
             if (mediaItem != null) {
                 serviceScope.launch {
+                    val filename = getFilenameFromUri(mediaItem.mediaId.toUri()) ?: mediaItem.mediaId
+                    val syncedPosition = mediaRepository.syncAndGetPlaybackPosition(mediaItem.mediaId, filename)
+                    
                     currentVideoState = mediaRepository.getVideoState(mediaItem.mediaId)
                     mediaSession?.player?.setPlaybackSpeed(
                         currentVideoState?.playbackSpeed ?: playerPreferences.defaultPlaybackSpeed,
                     )
+                    
+                    // Use the synced position if available and resume is enabled
+                    val positionToSeek = syncedPosition?.takeIf { playerPreferences.resume == Resume.YES }
+                    if (positionToSeek != null && positionToSeek > 0) {
+                        mediaSession?.player?.seekTo(positionToSeek)
+                    }
+                    
                     currentVideoState?.let { state ->
-                        state.position?.takeIf { playerPreferences.resume == Resume.YES }?.let {
-                            mediaSession?.player?.seekTo(it)
-                        }
+                        if (!playerPreferences.rememberSelections) return@let
+                        state.audioTrackIndex?.let { mediaSession?.player?.switchTrack(C.TRACK_TYPE_AUDIO, it) }
+                        state.subtitleTrackIndex?.let { mediaSession?.player?.switchTrack(C.TRACK_TYPE_TEXT, it) }
                     }
                 }
             }
@@ -124,8 +134,10 @@ class PlayerService : MediaSessionService() {
                 -> {
                     val newMediaItem = newPosition.mediaItem
                     if (newMediaItem != null && oldMediaItem != newMediaItem) {
+                        val filename = getFilenameFromUri(oldMediaItem.mediaId.toUri()) ?: oldMediaItem.mediaId
                         mediaRepository.updateMediumPosition(
                             uri = oldMediaItem.mediaId,
+                            filename = filename,
                             position = oldPosition.positionMs.takeIf { reason == DISCONTINUITY_REASON_SEEK } ?: C.TIME_UNSET,
                         )
                     }
@@ -133,8 +145,10 @@ class PlayerService : MediaSessionService() {
 
                 DISCONTINUITY_REASON_REMOVE -> {
                     if (!shouldSkipNextPositionSave) {
+                        val filenameOnRemove = getFilenameFromUri(oldMediaItem.mediaId.toUri()) ?: oldMediaItem.mediaId
                         mediaRepository.updateMediumPosition(
                             uri = oldMediaItem.mediaId,
+                            filename = filenameOnRemove,
                             position = oldPosition.positionMs,
                         )
                     }
