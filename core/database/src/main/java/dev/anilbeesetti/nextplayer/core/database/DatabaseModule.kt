@@ -21,5 +21,11 @@ object DatabaseModule {
         context = context,
         klass = MediaDatabase::class.java,
         name = MediaDatabase.DATABASE_NAME,
-    ).fallbackToDestructiveMigration(false).build()
-}
+    )
+        .addMigrations(object : androidx.room.migration.Migration(1, 2) {
+            override fun migrate(database: androidx.sqlite.db.SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE media ADD COLUMN position_last_updated INTEGER")
+            }
+        })
+        .fallbackToDestructiveMigration(false)
+        .build()
