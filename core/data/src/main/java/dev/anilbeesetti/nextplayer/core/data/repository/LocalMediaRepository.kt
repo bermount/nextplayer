@@ -1,7 +1,7 @@
 package dev.anilbeesetti.nextplayer.core.data.repository
 
 import android.net.Uri
-import com.google.android.exoplayer2.C
+import androidx.media3.common.C
 import dev.anilbeesetti.nextplayer.core.common.di.ApplicationScope
 import dev.anilbeesetti.nextplayer.core.data.mappers.toFolder
 import dev.anilbeesetti.nextplayer.core.data.mappers.toVideo
