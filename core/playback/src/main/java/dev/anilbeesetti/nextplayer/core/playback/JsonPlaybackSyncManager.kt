@@ -48,11 +48,10 @@ class JsonPlaybackSyncManager @Inject constructor(
         }
     }
 
-    suspend fun writePlaybackPositions(syncDirectoryUri: String, positions: List<PlaybackPosition>) = withContext(Dispatchers.IO) {
+    suspend fun writePlaybackPositions(syncDirectoryUri: String, newPositions: List<PlaybackPosition>) = withContext(Dispatchers.IO) {
         if (syncDirectoryUri.isBlank()) return@withContext
         try {
-            val dirUri = syncDirectoryUri.toUri()
-            val dir = DocumentFile.fromTreeUri(context, dirUri)
+            val dir = DocumentFile.fromTreeUri(context, syncDirectoryUri.toUri())
             var file = dir?.findFile(JSON_FILE_NAME)
             if (file == null) {
                 file = dir?.createFile("application/json", JSON_FILE_NAME)
@@ -61,10 +60,17 @@ class JsonPlaybackSyncManager @Inject constructor(
                 Timber.e("Failed to create playback positions JSON file.")
                 return@withContext
             }
-
+            
+            val existingPositions = readPlaybackPositions(syncDirectoryUri).associateBy { it.filename }.toMutableMap()
+            newPositions.forEach { newEntry ->
+                existingPositions[newEntry.filename] = newEntry
+            }
+            
+            val mergedList = existingPositions.values.toList()
+            
             context.contentResolver.openOutputStream(file.uri, "w")?.use { outputStream ->
                 OutputStreamWriter(outputStream).use { writer ->
-                    val jsonString = json.encodeToString(positions)
+                    val jsonString = json.encodeToString(mergedList)
                     writer.write(jsonString)
                 }
             }
@@ -72,4 +78,5 @@ class JsonPlaybackSyncManager @Inject constructor(
             Timber.e(e, "Error writing playback positions JSON")
         }
     }
+    
 }
