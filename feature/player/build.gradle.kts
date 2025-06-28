@@ -35,6 +35,8 @@ dependencies {
     implementation(project(":core:domain"))
     implementation(project(":core:model"))
     implementation(project(":core:ui"))
+    implementation(project(":core:datastore"))
+    implementation(project(":core:database"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -43,6 +45,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewModel.ktx)
     implementation(libs.google.android.material)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.documentfile)
 
     // Media3
     implementation(libs.androidx.media3.common)
