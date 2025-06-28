@@ -28,4 +28,10 @@ class FakePreferencesRepository : PreferencesRepository {
     ) {
         playerPreferencesStateFlow.update { transform.invoke(it) }
     }
+
+    override suspend fun setSyncPlaybackPositionsFolderUri(uri: String) {
+        dataStore.updateData { preferences ->
+            preferences.copy(syncPlaybackPositionsFolderUri = uri)
+        }
+    }
 }
