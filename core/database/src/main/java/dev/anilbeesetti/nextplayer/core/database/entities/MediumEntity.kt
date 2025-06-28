@@ -38,4 +38,5 @@ data class MediumEntity(
     @ColumnInfo(name = "last_played_time") val lastPlayedTime: Long? = null,
     @ColumnInfo(name = "external_subs") val externalSubs: String = "",
     @ColumnInfo(name = "video_scale") val videoScale: Float = 1f,
+    @ColumnInfo(name = "position_last_updated") val positionLastUpdated: Long? = null,
 )
