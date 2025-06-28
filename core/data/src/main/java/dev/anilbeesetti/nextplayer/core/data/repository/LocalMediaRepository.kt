@@ -13,6 +13,9 @@ import dev.anilbeesetti.nextplayer.core.database.relations.DirectoryWithMedia
 import dev.anilbeesetti.nextplayer.core.database.relations.MediumWithInfo
 import dev.anilbeesetti.nextplayer.core.model.Folder
 import dev.anilbeesetti.nextplayer.core.model.Video
+import dev.anilbeesetti.nextplayer.core.playback.JsonPlaybackSyncManager
+import dev.anilbeesetti.nextplayer.core.playback.PlaybackPosition
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -22,6 +25,8 @@ import kotlinx.coroutines.launch
 class LocalMediaRepository @Inject constructor(
     private val mediumDao: MediumDao,
     private val directoryDao: DirectoryDao,
+    private val jsonPlaybackSyncManager: JsonPlaybackSyncManager,
+    private val preferencesRepository: PreferencesRepository,
     @ApplicationScope private val applicationScope: CoroutineScope,
 ) : MediaRepository {
 
@@ -47,14 +52,67 @@ class LocalMediaRepository @Inject constructor(
         }
     }
 
-    override fun updateMediumPosition(uri: String, position: Long) {
+    override fun updateMediumPosition(uri: String, filename: String, position: Long) {
         applicationScope.launch {
             val duration = mediumDao.get(uri)?.duration ?: position.plus(1)
-            mediumDao.updateMediumPosition(
-                uri = uri,
-                position = position.takeIf { it < duration } ?: Long.MIN_VALUE.plus(1),
-            )
-            mediumDao.updateMediumLastPlayedTime(uri, System.currentTimeMillis())
+            val finalPosition = position.takeIf { it < duration } ?: Long.MIN_VALUE.plus(1)
+            val timestamp = System.currentTimeMillis()
+            
+            // Update local database
+            mediumDao.updatePositionAndTimestamp(uri, finalPosition, timestamp)
+            mediumDao.updateMediumLastPlayedTime(uri, timestamp)
+            
+            // Update external JSON
+            val syncFolder = preferencesRepository.playerPreferences.first().syncPlaybackPositionsFolderUri
+            if (syncFolder.isNotBlank()) {
+                val allPositions = jsonPlaybackSyncManager.readPlaybackPositions(syncFolder).toMutableList()
+                val existingIndex = allPositions.indexOfFirst { it.filename == filename }
+                val newPositionEntry = PlaybackPosition(filename, finalPosition, timestamp)
+                
+                if (existingIndex != -1) {
+                    allPositions[existingIndex] = newPositionEntry
+                } else {
+                    allPositions.add(newPositionEntry)
+                }
+                jsonPlaybackSyncManager.writePlaybackPositions(syncFolder, allPositions)
+            }
+        }
+    }
+
+ 
+    override suspend fun syncAndGetPlaybackPosition(uri: String, filename: String): Long? {
+        val syncFolder = preferencesRepository.playerPreferences.first().syncPlaybackPositionsFolderUri
+        if (syncFolder.isBlank()) {
+            return mediumDao.get(uri)?.playbackPosition
+        }
+        
+        val dbEntity = mediumDao.get(uri)
+        val dbPosition = dbEntity?.playbackPosition
+        val dbTimestamp = dbEntity?.positionLastUpdated ?: 0L
+        
+        val jsonPositions = jsonPlaybackSyncManager.readPlaybackPositions(syncFolder)
+        val jsonEntry = jsonPositions.find { it.filename == filename }
+        val jsonPosition = jsonEntry?.position
+        val jsonTimestamp = jsonEntry?.lastUpdated ?: 0L
+        
+        // Compare and sync
+        when {
+            // JSON is newer, update DB
+            jsonTimestamp > dbTimestamp && jsonPosition != null -> {
+                mediumDao.updatePositionAndTimestamp(uri, jsonPosition, jsonTimestamp)
+                return jsonPosition
+            }
+            // DB is newer, update JSON
+            dbTimestamp > jsonTimestamp && dbPosition != null -> {
+                val newPositions = jsonPositions.filterNot { it.filename == filename }.toMutableList()
+                newPositions.add(PlaybackPosition(filename, dbPosition, dbTimestamp))
+                jsonPlaybackSyncManager.writePlaybackPositions(syncFolder, newPositions)
+                return dbPosition
+            }
+            // No conflict or no data, return DB value
+            else -> {
+                return dbPosition
+            }
         }
     }
 
