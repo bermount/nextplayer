@@ -36,6 +36,12 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.android)
 
+    // Media3
+    implementation(libs.androidx.media3.common)
+
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.guava)
+
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
