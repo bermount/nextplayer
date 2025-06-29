@@ -21,6 +21,11 @@ import java.security.MessageDigest
 
 private const val JSON_FILE_NAME = "playback_positions.json"
 
+fun hashString(input: String): String {
+    val bytes = MessageDigest.getInstance("SHA-256").digest(input.toByteArray())
+    return bytes.joinToString("") { "%02x".format(it) }
+}
+
 @Singleton
 class JsonPlaybackSyncManager @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -69,7 +74,8 @@ class JsonPlaybackSyncManager @Inject constructor(
             if (playbackDir == null) return@withContext
             
             // Use filename as the file name
-            val safeFilename = playbackPosition.filename
+            // Use a SHA-256 hash of the filename as the file name
+            val safeFilename = hashString(playbackPosition.filename)
             val fileName = "$safeFilename.json"
             
             // Remove old file if exists
