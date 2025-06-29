@@ -85,10 +85,6 @@ class PlayerService : MediaSessionService() {
 
     private var shouldSkipNextPositionSave = false
 
-    private fun getFilenameFromUri(uri: Uri): String? {
-        return uri.lastPathSegment
-    }
-
     private val playbackStateListener = object : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             super.onMediaItemTransition(mediaItem, reason)
@@ -103,7 +99,7 @@ class PlayerService : MediaSessionService() {
                 serviceScope.launch {
                     // Get filename for syncing purposes
                     val mediaUri = mediaItem.mediaId.toUri()
-                    val filename = getFilenameFromUri(mediaUri) ?: mediaItem.mediaId // Fallback to mediaId if filename extraction fails
+                    val filename = this.getFilenameFromUri(mediaUri)                    
                     
                     // Sync playback position from DB and JSON, and get the most recent one
                     val syncedPosition = mediaRepository.syncAndGetPlaybackPosition(mediaItem.mediaId, filename)
@@ -148,7 +144,7 @@ class PlayerService : MediaSessionService() {
                 -> {
                     val newMediaItem = newPosition.mediaItem
                     if (newMediaItem != null && oldMediaItem != newMediaItem) {
-                        val filename = getFilenameFromUri(oldMediaItem.mediaId.toUri()) ?: oldMediaItem.mediaId
+                        val filename = this.getFilenameFromUri(mediaUri)
                         mediaRepository.updateMediumPosition(
                             uri = oldMediaItem.mediaId,
                             filename = filename,
@@ -159,7 +155,7 @@ class PlayerService : MediaSessionService() {
 
                 DISCONTINUITY_REASON_REMOVE -> {
                     if (!shouldSkipNextPositionSave) {
-                        val filenameOnRemove = getFilenameFromUri(oldMediaItem.mediaId.toUri()) ?: oldMediaItem.mediaId
+                        val filename = this.getFilenameFromUri(mediaUri)
                         mediaRepository.updateMediumPosition(
                             uri = oldMediaItem.mediaId,
                             filename = filenameOnRemove,
