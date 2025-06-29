@@ -99,7 +99,7 @@ class PlayerService : MediaSessionService() {
                 serviceScope.launch {
                     // Get filename for syncing purposes
                     val mediaUri = mediaItem.mediaId.toUri()
-                    val filename = this.getFilenameFromUri(mediaUri)                    
+                    val filename = this@PlayerService.getFilenameFromUri(mediaUri)                    
                     
                     // Sync playback position from DB and JSON, and get the most recent one
                     val syncedPosition = mediaRepository.syncAndGetPlaybackPosition(mediaItem.mediaId, filename)
@@ -144,7 +144,7 @@ class PlayerService : MediaSessionService() {
                 -> {
                     val newMediaItem = newPosition.mediaItem
                     if (newMediaItem != null && oldMediaItem != newMediaItem) {
-                        val filename = this.getFilenameFromUri(mediaUri)
+                        val filename = this@PlayerService.getFilenameFromUri(oldMediaItem.mediaId.toUri())
                         mediaRepository.updateMediumPosition(
                             uri = oldMediaItem.mediaId,
                             filename = filename,
@@ -155,7 +155,7 @@ class PlayerService : MediaSessionService() {
 
                 DISCONTINUITY_REASON_REMOVE -> {
                     if (!shouldSkipNextPositionSave) {
-                        val filename = this.getFilenameFromUri(mediaUri)
+                        val filename = this@PlayerService.getFilenameFromUri(oldMediaItem.mediaId.toUri())
                         mediaRepository.updateMediumPosition(
                             uri = oldMediaItem.mediaId,
                             filename = filenameOnRemove,
