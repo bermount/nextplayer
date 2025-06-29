@@ -2,21 +2,29 @@ package dev.anilbeesetti.nextplayer
 
 import android.graphics.Color
 import android.os.Bundle
+import android.net.Uri
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import android.content.Intent
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -29,6 +37,7 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import dagger.hilt.android.AndroidEntryPoint
 import dev.anilbeesetti.nextplayer.core.common.storagePermission
+import dev.anilbeesetti.nextplayer.core.data.repository.PreferencesRepository
 import dev.anilbeesetti.nextplayer.core.media.services.MediaService
 import dev.anilbeesetti.nextplayer.core.media.sync.MediaSynchronizer
 import dev.anilbeesetti.nextplayer.core.model.ThemeConfig
@@ -37,6 +46,7 @@ import dev.anilbeesetti.nextplayer.navigation.MEDIA_ROUTE
 import dev.anilbeesetti.nextplayer.navigation.mediaNavGraph
 import dev.anilbeesetti.nextplayer.navigation.settingsNavGraph
 import javax.inject.Inject
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -96,6 +106,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.surface,
                 ) {
                     val storagePermissionState = rememberPermissionState(permission = storagePermission)
+                    val showSyncFolderDialog by viewModel.showSyncDialog.collectAsState()
 
                     LifecycleEventEffect(event = Lifecycle.Event.ON_START) {
                         storagePermissionState.launchPermissionRequest()
@@ -104,6 +115,7 @@ class MainActivity : ComponentActivity() {
                     LaunchedEffect(key1 = storagePermissionState.status.isGranted) {
                         if (storagePermissionState.status.isGranted) {
                             synchronizer.startSync()
+                            checkAndRequestSyncFolder()
                         }
                     }
 
@@ -118,6 +130,28 @@ class MainActivity : ComponentActivity() {
                             navController = mainNavController,
                         )
                         settingsNavGraph(navController = mainNavController)
+                    }
+                    if (showSyncFolderDialog) {
+                        AlertDialog(
+                            onDismissRequest = { viewModel.setShowSyncDialog(false) },
+                            title = { Text("Sync Folder Setup") },
+                            text = { Text("To automatically sync playback progress, please choose a folder.") },
+                            confirmButton = {
+                                TextButton(
+                                    onClick = {
+                                        viewModel.setShowSyncDialog(false)
+                                        folderPickerLauncher.launch(null)
+                                    }
+                                ) {
+                                    Text("Choose Folder")
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { viewModel.setShowSyncDialog(false) }) {
+                                    Text("Later")
+                                }
+                            }
+                        )
                     }
                 }
             }
