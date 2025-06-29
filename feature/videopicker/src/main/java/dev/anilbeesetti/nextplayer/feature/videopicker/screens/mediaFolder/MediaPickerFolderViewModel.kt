@@ -92,7 +92,7 @@ class MediaPickerFolderViewModel @Inject constructor(
             uiStateInternal.update { it.copy(refreshing = true) }
             val syncDirUri = preferencesRepository.playerPreferences.first().syncPlaybackPositionsFolderUri
             if (!syncDirUri.isNullOrBlank()) {
-                mediaRepository.syncAllJsonPlaybackPositions(syncDirUri)
+                localMediaRepository.syncAllJsonPlaybackPositions(syncDirUri)
             }
             mediaSynchronizer.refresh()
             uiStateInternal.update { it.copy(refreshing = false) }
