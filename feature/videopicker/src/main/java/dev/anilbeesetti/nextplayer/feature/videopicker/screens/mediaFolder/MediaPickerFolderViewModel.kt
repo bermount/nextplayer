@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.anilbeesetti.nextplayer.core.data.repository.PreferencesRepository
+import dev.anilbeesetti.nextplayer.core.data.repository.MediaRepository
 import dev.anilbeesetti.nextplayer.core.domain.GetSortedMediaUseCase
 import dev.anilbeesetti.nextplayer.core.media.services.MediaService
 import dev.anilbeesetti.nextplayer.core.media.sync.MediaInfoSynchronizer
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first // <-- Add this
 
 @HiltViewModel
 class MediaPickerFolderViewModel @Inject constructor(
@@ -31,6 +33,7 @@ class MediaPickerFolderViewModel @Inject constructor(
     private val preferencesRepository: PreferencesRepository,
     private val mediaInfoSynchronizer: MediaInfoSynchronizer,
     private val mediaSynchronizer: MediaSynchronizer,
+    private val mediaRepository: MediaRepository // <-- Add this
 ) : ViewModel() {
 
     private val folderArgs = FolderArgs(savedStateHandle)
@@ -87,6 +90,10 @@ class MediaPickerFolderViewModel @Inject constructor(
     fun onRefreshClicked() {
         viewModelScope.launch {
             uiStateInternal.update { it.copy(refreshing = true) }
+            val syncDirUri = preferencesRepository.playerPreferences.first().syncPlaybackPositionsFolderUri
+            if (!syncDirUri.isNullOrBlank()) {
+                mediaRepository.syncAllJsonPlaybackPositions(syncDirUri)
+            }
             mediaSynchronizer.refresh()
             uiStateInternal.update { it.copy(refreshing = false) }
         }
