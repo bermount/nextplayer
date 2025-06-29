@@ -80,6 +80,12 @@ class JsonPlaybackSyncManager @Inject constructor(
             
             // Remove old file if exists
             playbackDir.findFile(fileName)?.delete()
+            val duplicatePattern = Regex("""^${Regex.escape(safeFilename)} \(\d+\)\.json$""")
+            playbackDir.listFiles().forEach { file ->
+                if (duplicatePattern.matches(file.name ?: "")) {
+                    file.delete()
+                }
+            }
             
             val existingFile = playbackDir.findFile(fileName)
             if (existingFile != null) {
