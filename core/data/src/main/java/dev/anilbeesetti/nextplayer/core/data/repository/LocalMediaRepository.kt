@@ -71,7 +71,7 @@ class LocalMediaRepository @Inject constructor(
                 val newPositionEntry = PlaybackPosition(filename, finalPosition, timestamp)
                 // Pass a list containing only the updated entry to the sync manager
                 // The sync manager will handle merging this with the existing JSON content.
-                jsonPlaybackSyncManager.writePlaybackPositions(syncFolder, listOf(newPositionEntry))
+                jsonPlaybackSyncManager.writePlaybackPositions(syncFolder, newPositionEntry)
             }
         }
     }
@@ -106,7 +106,7 @@ class LocalMediaRepository @Inject constructor(
                 Timber.d("DB is newer for $filename. Syncing DB to JSON. Pos: $dbPosition")
                 // Create a list with just this updated entry
                 val updatedJsonEntry = PlaybackPosition(filename, dbPosition, dbTimestamp)
-                jsonPlaybackSyncManager.writePlaybackPositions(syncFolder, listOf(updatedJsonEntry))
+                jsonPlaybackSyncManager.writePlaybackPositions(syncFolder, updatedJsonEntry)
                 return dbPosition
             }
             // Case 3: Timestamps are equal or no data in either, or data matches.
