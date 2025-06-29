@@ -13,6 +13,8 @@ interface MediaRepository {
 
     suspend fun getVideoState(uri: String): VideoState?
 
+    suspend fun syncAllJsonPlaybackPositions(syncDirectoryUri: String)
+    
     suspend fun syncAndGetPlaybackPosition(uri: String, filename: String): Long?
 
     fun updateMediumLastPlayedTime(uri: String, lastPlayedTime: Long)
