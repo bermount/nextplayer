@@ -27,7 +27,7 @@ class JsonPlaybackSyncManager @Inject constructor(
     private val json: Json,
 ) {
 
-    suspend fun readAllPlaybackPositions(syncDirectoryUri: String): List<PlaybackPosition> = withContext(Dispatchers.IO) {
+    suspend fun readPlaybackPositions(syncDirectoryUri: String): List<PlaybackPosition> = withContext(Dispatchers.IO) {
         if (syncDirectoryUri.isBlank()) return@withContext emptyList()
         try {
             val dir = DocumentFile.fromTreeUri(context, syncDirectoryUri.toUri())
@@ -51,7 +51,7 @@ class JsonPlaybackSyncManager @Inject constructor(
         }
     }
     
-    suspend fun writePlaybackPosition(
+    suspend fun writePlaybackPositions(
         syncDirectoryUri: String,
         playbackPosition: PlaybackPosition
     ) = withContext(Dispatchers.IO) {
