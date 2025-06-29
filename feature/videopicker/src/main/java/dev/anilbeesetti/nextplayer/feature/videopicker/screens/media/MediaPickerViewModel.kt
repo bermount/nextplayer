@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.anilbeesetti.nextplayer.core.data.repository.PreferencesRepository
+import dev.anilbeesetti.nextplayer.core.data.repository.MediaRepository
 import dev.anilbeesetti.nextplayer.core.domain.GetSortedMediaUseCase
 import dev.anilbeesetti.nextplayer.core.media.services.MediaService
 import dev.anilbeesetti.nextplayer.core.media.sync.MediaInfoSynchronizer
@@ -28,6 +29,7 @@ class MediaPickerViewModel @Inject constructor(
     private val preferencesRepository: PreferencesRepository,
     private val mediaInfoSynchronizer: MediaInfoSynchronizer,
     private val mediaSynchronizer: MediaSynchronizer,
+    private val mediaRepository: MediaRepository
 ) : ViewModel() {
 
     private val uiStateInternal = MutableStateFlow(MediaPickerUiState())
@@ -47,6 +49,15 @@ class MediaPickerViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = ApplicationPreferences(),
         )
+
+    init {
+        viewModelScope.launch {
+            val syncDirUri = preferencesRepository.playerPreferences.first().syncPlaybackPositionsFolderUri
+            if (!syncDirUri.isNullOrBlank()) {
+                mediaRepository.syncAllJsonPlaybackPositions(syncDirUri)
+            }
+        }
+    }
 
     fun updateMenu(applicationPreferences: ApplicationPreferences) {
         viewModelScope.launch {
