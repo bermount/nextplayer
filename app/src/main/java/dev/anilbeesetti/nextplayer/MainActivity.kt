@@ -1,16 +1,11 @@
 package dev.anilbeesetti.nextplayer
 
-import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Color
-import android.net.Uri
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,10 +27,8 @@ import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import dev.anilbeesetti.nextplayer.core.common.storagePermission
-import dev.anilbeesetti.nextplayer.core.data.repository.PreferencesRepository
 import dev.anilbeesetti.nextplayer.core.media.services.MediaService
 import dev.anilbeesetti.nextplayer.core.media.sync.MediaSynchronizer
 import dev.anilbeesetti.nextplayer.core.model.ThemeConfig
@@ -43,21 +36,20 @@ import dev.anilbeesetti.nextplayer.core.ui.theme.NextPlayerTheme
 import dev.anilbeesetti.nextplayer.navigation.MEDIA_ROUTE
 import dev.anilbeesetti.nextplayer.navigation.mediaNavGraph
 import dev.anilbeesetti.nextplayer.navigation.settingsNavGraph
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    @Inject
-    lateinit var preferencesRepository: PreferencesRepository
 
     @Inject
     lateinit var synchronizer: MediaSynchronizer
 
     @Inject
     lateinit var mediaService: MediaService
+
+    @Inject
+    lateinit var preferencesRepository: PreferencesRepository
 
     private val viewModel: MainActivityViewModel by viewModels()
 
@@ -76,7 +68,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mediaService.initialize(this@MainActivity)
+
         var uiState: MainActivityUiState by mutableStateOf(MainActivityUiState.Loading)
+
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
@@ -110,12 +104,11 @@ class MainActivity : ComponentActivity() {
                     LaunchedEffect(key1 = storagePermissionState.status.isGranted) {
                         if (storagePermissionState.status.isGranted) {
                             synchronizer.startSync()
-                            // Check for sync folder after storage permission is granted
-                            checkAndRequestSyncFolder()
                         }
                     }
 
                     val mainNavController = rememberNavController()
+
                     NavHost(
                         navController = mainNavController,
                         startDestination = MEDIA_ROUTE,
@@ -130,31 +123,21 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
     private fun checkAndRequestSyncFolder() {
         lifecycleScope.launch {
             val prefs = preferencesRepository.playerPreferences.first()
             if (prefs.syncPlaybackPositionsFolderUri.isBlank()) {
-                MaterialAlertDialogBuilder(this@MainActivity)
-                    .setTitle("Folder Setup")
-                    .setMessage("Choose a folder save playback progress.")
-                    .setPositiveButton("Choose Folder") { dialog, _ ->
-                        folderPickerLauncher.launch(null)
-                        dialog.dismiss()
-                    }
-                    .setNegativeButton("Later") { dialog, _ ->
-                        dialog.dismiss()
-                    }
-                    .setCancelable(false)
-                    .show()
+                // Used by Compose to show the dialog
+                viewModel.setShowSyncDialog(true)
             }
         }
     }
-
+    
     private fun handleSelectedFolderUri(uri: Uri) {
+        // Makes the permission permanent
         val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
         contentResolver.takePersistableUriPermission(uri, flags)
-
+        
         // Save the folder location to settings
         lifecycleScope.launch {
             preferencesRepository.setSyncPlaybackPositionsFolderUri(uri.toString())
@@ -163,8 +146,14 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Returns `true` if dark theme should be used, as a function of the [uiState] and the
+ * current system context.
+ */
 @Composable
-private fun shouldUseDarkTheme(uiState: MainActivityUiState): Boolean = when (uiState) {
+private fun shouldUseDarkTheme(
+    uiState: MainActivityUiState,
+): Boolean = when (uiState) {
     MainActivityUiState.Loading -> isSystemInDarkTheme()
     is MainActivityUiState.Success -> when (uiState.preferences.themeConfig) {
         ThemeConfig.SYSTEM -> isSystemInDarkTheme()
@@ -174,13 +163,20 @@ private fun shouldUseDarkTheme(uiState: MainActivityUiState): Boolean = when (ui
 }
 
 @Composable
-fun shouldUseHighContrastDarkTheme(uiState: MainActivityUiState): Boolean = when (uiState) {
+fun shouldUseHighContrastDarkTheme(
+    uiState: MainActivityUiState,
+): Boolean = when (uiState) {
     MainActivityUiState.Loading -> false
     is MainActivityUiState.Success -> uiState.preferences.useHighContrastDarkTheme
 }
 
+/**
+ * Returns `true` if the dynamic color is disabled, as a function of the [uiState].
+ */
 @Composable
-private fun shouldUseDynamicTheming(uiState: MainActivityUiState): Boolean = when (uiState) {
+private fun shouldUseDynamicTheming(
+    uiState: MainActivityUiState,
+): Boolean = when (uiState) {
     MainActivityUiState.Loading -> false
     is MainActivityUiState.Success -> uiState.preferences.useDynamicColors
 }
