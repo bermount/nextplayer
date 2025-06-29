@@ -81,15 +81,26 @@ class JsonPlaybackSyncManager @Inject constructor(
             // Remove old file if exists
             playbackDir.findFile(fileName)?.delete()
             
-            // Write new file
-            val file = playbackDir.createFile("application/json", fileName)
-            if (file != null) {
-                context.contentResolver.openOutputStream(file.uri, "w")?.use { outputStream ->
+            val existingFile = playbackDir.findFile(fileName)
+            if (existingFile != null) {
+                // Overwrite the file by opening its output stream
+                context.contentResolver.openOutputStream(existingFile.uri, "w")?.use { outputStream ->
                     OutputStreamWriter(outputStream).use { writer ->
                         writer.write(json.encodeToString(playbackPosition))
                     }
                 }
+            } else {
+                // No file exists, safe to create
+                val file = playbackDir.createFile("application/json", fileName)
+                if (file != null) {
+                    context.contentResolver.openOutputStream(file.uri, "w")?.use { outputStream ->
+                        OutputStreamWriter(outputStream).use { writer ->
+                            writer.write(json.encodeToString(playbackPosition))
+                        }
+                    }
+                }
             }
+            
         } catch (e: Exception) {
             Timber.e(e, "Error writing playback position for ${playbackPosition.filename}")
         }
