@@ -39,26 +39,27 @@ class JsonPlaybackSyncManager @Inject constructor(
     
     suspend fun readPlaybackPositions(syncDirectoryUri: String): List<PlaybackPosition> = mutex.withLock {
         withContext(Dispatchers.IO) {
-        if (syncDirectoryUri.isBlank()) return@withContext emptyList()
-        try {
-            val dir = DocumentFile.fromTreeUri(context, syncDirectoryUri.toUri())
-            val playbackDir = dir?.findFile("playback_positions")
-            if (playbackDir == null || !playbackDir.isDirectory) return@withContext emptyList()
-            
-            playbackDir.listFiles().mapNotNull { file ->
-                try {
-                    context.contentResolver.openInputStream(file.uri)?.use { inputStream ->
-                        BufferedReader(InputStreamReader(inputStream)).use { reader ->
-                            val content = reader.readText()
-                            if (content.isNotBlank()) json.decodeFromString<PlaybackPosition>(content) else null
+            if (syncDirectoryUri.isBlank()) return@withContext emptyList()
+            try {
+                val dir = DocumentFile.fromTreeUri(context, syncDirectoryUri.toUri())
+                val playbackDir = dir?.findFile("playback_positions")
+                if (playbackDir == null || !playbackDir.isDirectory) return@withContext emptyList()
+                
+                playbackDir.listFiles().mapNotNull { file ->
+                    try {
+                        context.contentResolver.openInputStream(file.uri)?.use { inputStream ->
+                            BufferedReader(InputStreamReader(inputStream)).use { reader ->
+                                val content = reader.readText()
+                                if (content.isNotBlank()) json.decodeFromString<PlaybackPosition>(content) else null
+                            }
                         }
+                    } catch (e: Exception) {
+                        null
                     }
-                } catch (e: Exception) {
-                    null
                 }
+            } catch (e: Exception) {
+                emptyList()
             }
-        } catch (e: Exception) {
-            emptyList()
         }
     }
     
@@ -67,54 +68,54 @@ class JsonPlaybackSyncManager @Inject constructor(
         playbackPosition: PlaybackPosition
     ) = mutex.withLock {
         withContext(Dispatchers.IO) {
-        if (syncDirectoryUri.isBlank()) return@withContext
-        try {
-            val dir = DocumentFile.fromTreeUri(context, syncDirectoryUri.toUri())
-            if (dir == null || !dir.exists() || !dir.isDirectory) return@withContext
-            
-            // Create a subdir for playback positions
-            var playbackDir = dir.findFile("playback_positions")
-            if (playbackDir == null || !playbackDir.isDirectory) {
-                playbackDir = dir.createDirectory("playback_positions")
-            }
-            if (playbackDir == null) return@withContext
-            
-            // Use filename as the file name
-            // Use a SHA-256 hash of the filename as the file name
-            val safeFilename = hashString(playbackPosition.filename)
-            val fileName = "$safeFilename.json"
-            
-            // Remove old file if exists
-            playbackDir.findFile(fileName)?.delete()
-            val duplicatePattern = Regex("""^${Regex.escape(safeFilename)} \(\d+\)\.json$""")
-            playbackDir.listFiles().forEach { file ->
-                if (duplicatePattern.matches(file.name ?: "")) {
-                    file.delete()
+            if (syncDirectoryUri.isBlank()) return@withContext
+            try {
+                val dir = DocumentFile.fromTreeUri(context, syncDirectoryUri.toUri())
+                if (dir == null || !dir.exists() || !dir.isDirectory) return@withContext
+                
+                // Create a subdir for playback positions
+                var playbackDir = dir.findFile("playback_positions")
+                if (playbackDir == null || !playbackDir.isDirectory) {
+                    playbackDir = dir.createDirectory("playback_positions")
                 }
-            }
-            
-            val existingFile = playbackDir.findFile(fileName)
-            if (existingFile != null) {
-                // Overwrite the file by opening its output stream
-                context.contentResolver.openOutputStream(existingFile.uri, "w")?.use { outputStream ->
-                    OutputStreamWriter(outputStream).use { writer ->
-                        writer.write(json.encodeToString(playbackPosition))
+                if (playbackDir == null) return@withContext
+                
+                // Use filename as the file name
+                // Use a SHA-256 hash of the filename as the file name
+                val safeFilename = hashString(playbackPosition.filename)
+                val fileName = "$safeFilename.json"
+                
+                // Remove old file if exists
+                playbackDir.findFile(fileName)?.delete()
+                val duplicatePattern = Regex("""^${Regex.escape(safeFilename)} \(\d+\)\.json$""")
+                playbackDir.listFiles().forEach { file ->
+                    if (duplicatePattern.matches(file.name ?: "")) {
+                        file.delete()
                     }
                 }
-            } else {
-                // No file exists, safe to create
-                val file = playbackDir.createFile("application/json", fileName)
-                if (file != null) {
-                    context.contentResolver.openOutputStream(file.uri, "w")?.use { outputStream ->
+                
+                val existingFile = playbackDir.findFile(fileName)
+                if (existingFile != null) {
+                    // Overwrite the file by opening its output stream
+                    context.contentResolver.openOutputStream(existingFile.uri, "w")?.use { outputStream ->
                         OutputStreamWriter(outputStream).use { writer ->
                             writer.write(json.encodeToString(playbackPosition))
                         }
                     }
+                } else {
+                    // No file exists, safe to create
+                    val file = playbackDir.createFile("application/json", fileName)
+                    if (file != null) {
+                        context.contentResolver.openOutputStream(file.uri, "w")?.use { outputStream ->
+                            OutputStreamWriter(outputStream).use { writer ->
+                                writer.write(json.encodeToString(playbackPosition))
+                            }
+                        }
+                    }
                 }
+                
+            } catch (e: Exception) {
+                Timber.e(e, "Error writing playback position for ${playbackPosition.filename}")
             }
-            
-        } catch (e: Exception) {
-            Timber.e(e, "Error writing playback position for ${playbackPosition.filename}")
         }
     }
-}
