@@ -8,6 +8,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.anilbeesetti.nextplayer.core.common.di.ApplicationScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -32,8 +34,11 @@ class JsonPlaybackSyncManager @Inject constructor(
     @ApplicationScope private val applicationScope: CoroutineScope,
     private val json: Json,
 ) {
+
+    private val mutex = Mutex()
     
-    suspend fun readPlaybackPositions(syncDirectoryUri: String): List<PlaybackPosition> = withContext(Dispatchers.IO) {
+    suspend fun readPlaybackPositions(syncDirectoryUri: String): List<PlaybackPosition> = mutex.withLock {
+        withContext(Dispatchers.IO) {
         if (syncDirectoryUri.isBlank()) return@withContext emptyList()
         try {
             val dir = DocumentFile.fromTreeUri(context, syncDirectoryUri.toUri())
@@ -60,7 +65,8 @@ class JsonPlaybackSyncManager @Inject constructor(
     suspend fun writePlaybackPositions(
         syncDirectoryUri: String,
         playbackPosition: PlaybackPosition
-    ) = withContext(Dispatchers.IO) {
+    ) = mutex.withLock {
+        withContext(Dispatchers.IO) {
         if (syncDirectoryUri.isBlank()) return@withContext
         try {
             val dir = DocumentFile.fromTreeUri(context, syncDirectoryUri.toUri())
