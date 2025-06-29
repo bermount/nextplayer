@@ -35,6 +35,9 @@ class FakeMediaRepository : MediaRepository {
     override fun updateMediumPosition(uri: String, filename: String, position: Long) {
     }
 
+    override suspend fun syncAllJsonPlaybackPositions(syncDirectoryUri: String) {
+    }
+    
     override suspend fun syncAndGetPlaybackPosition(uri: String, filename: String): Long? {
         return null
     }
