@@ -17,6 +17,7 @@ import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import javax.inject.Inject
 import javax.inject.Singleton
+import java.security.MessageDigest
 
 private const val JSON_FILE_NAME = "playback_positions.json"
 
@@ -68,7 +69,7 @@ class JsonPlaybackSyncManager @Inject constructor(
             if (playbackDir == null) return@withContext
             
             // Use filename as the file name
-            val safeFilename = playbackPosition.filename.replace(Regex("""[^a-zA-Z0-9._-]"""), "_")
+            val safeFilename = playbackPosition.filename
             val fileName = "$safeFilename.json"
             
             // Remove old file if exists
