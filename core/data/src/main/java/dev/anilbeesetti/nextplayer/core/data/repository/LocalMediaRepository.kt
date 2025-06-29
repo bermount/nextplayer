@@ -76,6 +76,17 @@ class LocalMediaRepository @Inject constructor(
         }
     }
 
+    suspend fun syncAllJsonPlaybackPositions(syncDirectoryUri: String) {
+        val allPositions = jsonPlaybackSyncManager.readPlaybackPositions(syncDirectoryUri)
+        allPositions.forEach { position ->
+            mediumDao.updatePositionAndTimestampByFilename(
+                filename = position.filename,
+                position = position.position,
+                timestamp = position.lastUpdated
+            )
+        }
+    }
+    
     override suspend fun syncAndGetPlaybackPosition(uri: String, filename: String): Long? {
         val syncFolder = preferencesRepository.playerPreferences.first().syncPlaybackPositionsFolderUri
         
