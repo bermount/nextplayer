@@ -32,7 +32,13 @@ class JsonPlaybackSyncManager @Inject constructor(
     @ApplicationScope private val applicationScope: CoroutineScope,
     private val json: Json,
 ) {
-
+    suspend fun syncAllJsonPlaybackPositions(syncDirectoryUri: String) {
+        val allPositions = jsonPlaybackSyncManager.readPlaybackPositions(syncDirectoryUri)
+        allPositions.forEach { position ->
+            mediumDao.updatePositionByFilename(position.filename, position.position, position.lastUpdated)
+        }
+    }
+    
     suspend fun readPlaybackPositions(syncDirectoryUri: String): List<PlaybackPosition> = withContext(Dispatchers.IO) {
         if (syncDirectoryUri.isBlank()) return@withContext emptyList()
         try {
