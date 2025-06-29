@@ -70,6 +70,9 @@ android {
         resources {
             excludes.add("/META-INF/{AL2.0,LGPL2.1}")
         }
+        jniLibs {
+            useLegacyPackaging = true
+        }
     }
 
     dependenciesInfo {
@@ -83,7 +86,7 @@ android {
 dependencies {
 
     implementation(project(":core:common"))
-    implementation(project(":core:data"))
+    api(project(":core:data"))
     implementation(project(":core:media"))
     implementation(project(":core:model"))
     implementation(project(":core:ui"))
