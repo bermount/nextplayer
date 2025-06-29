@@ -158,7 +158,7 @@ class PlayerService : MediaSessionService() {
                         val filename = this@PlayerService.getFilenameFromUri(oldMediaItem.mediaId.toUri())
                         mediaRepository.updateMediumPosition(
                             uri = oldMediaItem.mediaId,
-                            filename = filenameOnRemove,
+                            filename = filename,
                             position = oldPosition.positionMs,
                         )
                     }
