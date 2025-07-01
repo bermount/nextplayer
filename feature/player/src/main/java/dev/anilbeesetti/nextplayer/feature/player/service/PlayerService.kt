@@ -139,7 +139,7 @@ class PlayerService : MediaSessionService() {
             val oldMediaItem = oldPosition.mediaItem ?: return
 
             when (reason) {
-                DISCONTINUITY_REASON_SEEK,
+//                DISCONTINUITY_REASON_SEEK,
                 DISCONTINUITY_REASON_AUTO_TRANSITION,
                 -> {
                     val newMediaItem = newPosition.mediaItem
