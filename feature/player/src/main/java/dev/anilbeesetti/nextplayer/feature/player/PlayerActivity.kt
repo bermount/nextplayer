@@ -967,16 +967,24 @@ class PlayerActivity : AppCompatActivity() {
             KeyEvent.KEYCODE_6, KeyEvent.KEYCODE_NUMPAD_6
         )
         if (isNumPadKey) {
-            if (!fastPlaybackLockActive) {
+            if (fastPlaybackLockActive) {
+                // Unlock and switch to the new fast playback
+                unlockFastPlayback()
+                startFastPlayback(getFastPlaybackKeyNumber(keyCode))
+                fastPlaybackLockedKey = keyCode
+            } else {
                 startFastPlayback(getFastPlaybackKeyNumber(keyCode))
                 fastPlaybackLockedKey = keyCode
             }
             return true
         }
         
-        // Lock fast playback when period is pressed while holding a number
-        if (keyCode == KeyEvent.KEYCODE_NUMPAD_DOT && !fastPlaybackLockActive && fastPlaybackLockedKey != null) {
-            lockFastPlayback()
+        if (keyCode == KeyEvent.KEYCODE_NUMPAD_DOT) {
+            if (!fastPlaybackLockActive && fastPlaybackLockedKey != null) {
+                lockFastPlayback()
+            } else if (fastPlaybackLockActive) {
+                unlockFastPlayback()
+            }
             return true
         }
         
@@ -1140,18 +1148,10 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         if (!fastPlaybackLockActive) {
             stopFastPlayback()
             fastPlaybackLockedKey = null
-        } else if (fastPlaybackLockActive) {
-            unlockFastPlayback()
         }
         return true
     }
-    
-    // If period is pressed again, unlock fast playback
-    if (keyCode == KeyEvent.KEYCODE_NUMPAD_DOT && fastPlaybackLockActive) {
-        unlockFastPlayback()
-        return true
-    }
-    
+        
     when (keyCode) {
             // Hide volume indicator (Existing)
             KeyEvent.KEYCODE_VOLUME_UP,
