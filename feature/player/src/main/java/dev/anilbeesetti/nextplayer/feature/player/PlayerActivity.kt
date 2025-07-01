@@ -941,7 +941,7 @@ class PlayerActivity : AppCompatActivity() {
         if (mediaController != null) {
             fastPlaybackLockActive = true
             fastPlaybackLockedSpeed = mediaController!!.playbackParameters.speed
-            showTopInfo("Fast speed locked: $fastPlaybackLockedSpeed\nPress . or 1~6 to unlock")
+            showTopInfo("Speed locked: %.1fx".format(Locale.US, fastPlaybackLockedSpeed))
         }
     }
     
@@ -950,7 +950,7 @@ class PlayerActivity : AppCompatActivity() {
             fastPlaybackLockActive = false
             fastPlaybackLockedKey = null
             stopFastPlayback()
-            showTopInfo("Fast speed unlocked")
+            showTopInfo("Speed unlocked")
             hideTopInfo(HIDE_DELAY_MILLIS)
         }
     }
