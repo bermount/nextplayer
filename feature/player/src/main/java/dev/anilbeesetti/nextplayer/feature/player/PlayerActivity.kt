@@ -145,6 +145,10 @@ class PlayerActivity : AppCompatActivity() {
     private val shouldFastSeek: Boolean
         get() = playerPreferences.shouldFastSeek(mediaController?.duration ?: C.TIME_UNSET)
 
+    private var fastPlaybackLockActive: Boolean = false
+    private var fastPlaybackLockedSpeed: Float = 1.0f
+    private var fastPlaybackLockedKey: Int? = null
+
     /**
      * Player
      */
@@ -922,9 +926,60 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
-override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+    private fun getFastPlaybackKeyNumber(keyCode: Int): Int =
+    when (keyCode) {
+        KeyEvent.KEYCODE_1, KeyEvent.KEYCODE_NUMPAD_1 -> 1
+        KeyEvent.KEYCODE_2, KeyEvent.KEYCODE_NUMPAD_2 -> 2
+        KeyEvent.KEYCODE_3, KeyEvent.KEYCODE_NUMPAD_3 -> 3
+        KeyEvent.KEYCODE_4, KeyEvent.KEYCODE_NUMPAD_4 -> 4
+        KeyEvent.KEYCODE_5, KeyEvent.KEYCODE_NUMPAD_5 -> 5
+        KeyEvent.KEYCODE_6, KeyEvent.KEYCODE_NUMPAD_6 -> 6
+        else -> 1
+    }
+
+    private fun lockFastPlayback() {
+        if (mediaController != null) {
+            fastPlaybackLockActive = true
+            fastPlaybackLockedSpeed = mediaController!!.playbackParameters.speed
+            showTopInfo("Fast speed locked: $fastPlaybackLockedSpeed\nPress . or 1~6 to unlock")
+        }
+    }
+    
+    private fun unlockFastPlayback() {
+        if (mediaController != null) {
+            fastPlaybackLockActive = false
+            fastPlaybackLockedKey = null
+            stopFastPlayback()
+            showTopInfo("Fast speed unlocked")
+            hideTopInfo(HIDE_DELAY_MILLIS)
+        }
+    }
+    
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (isControlsLocked) return super.onKeyDown(keyCode, event)
 
+        val isNumPadKey = keyCode in listOf(
+            KeyEvent.KEYCODE_1, KeyEvent.KEYCODE_NUMPAD_1,
+            KeyEvent.KEYCODE_2, KeyEvent.KEYCODE_NUMPAD_2,
+            KeyEvent.KEYCODE_3, KeyEvent.KEYCODE_NUMPAD_3,
+            KeyEvent.KEYCODE_4, KeyEvent.KEYCODE_NUMPAD_4,
+            KeyEvent.KEYCODE_5, KeyEvent.KEYCODE_NUMPAD_5,
+            KeyEvent.KEYCODE_6, KeyEvent.KEYCODE_NUMPAD_6
+        )
+        if (isNumPadKey) {
+            if (!fastPlaybackLockActive) {
+                startFastPlayback(getFastPlaybackKeyNumber(keyCode))
+                fastPlaybackLockedKey = keyCode
+            }
+            return true
+        }
+        
+        // Lock fast playback when period is pressed while holding a number
+        if (keyCode == KeyEvent.KEYCODE_NUMPAD_DOT && !fastPlaybackLockActive && fastPlaybackLockedKey != null) {
+            lockFastPlayback()
+            return true
+        }
+        
         when (keyCode) {
             // Volume Controls (Existing)
             KeyEvent.KEYCODE_VOLUME_UP,
@@ -1071,9 +1126,33 @@ override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
     }
 
 override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
-        if (isControlsLocked) return super.onKeyUp(keyCode, event)
+    if (isControlsLocked) return super.onKeyUp(keyCode, event)
 
-        when (keyCode) {
+    val isNumPadKey = keyCode in listOf(
+        KeyEvent.KEYCODE_1, KeyEvent.KEYCODE_NUMPAD_1,
+        KeyEvent.KEYCODE_2, KeyEvent.KEYCODE_NUMPAD_2,
+        KeyEvent.KEYCODE_3, KeyEvent.KEYCODE_NUMPAD_3,
+        KeyEvent.KEYCODE_4, KeyEvent.KEYCODE_NUMPAD_4,
+        KeyEvent.KEYCODE_5, KeyEvent.KEYCODE_NUMPAD_5,
+        KeyEvent.KEYCODE_6, KeyEvent.KEYCODE_NUMPAD_6
+    )
+    if (isNumPadKey) {
+        if (!fastPlaybackLockActive) {
+            stopFastPlayback()
+            fastPlaybackLockedKey = null
+        } else if (fastPlaybackLockActive) {
+            unlockFastPlayback()
+        }
+        return true
+    }
+    
+    // If period is pressed again, unlock fast playback
+    if (keyCode == KeyEvent.KEYCODE_NUMPAD_DOT && fastPlaybackLockActive) {
+        unlockFastPlayback()
+        return true
+    }
+    
+    when (keyCode) {
             // Hide volume indicator (Existing)
             KeyEvent.KEYCODE_VOLUME_UP,
             KeyEvent.KEYCODE_VOLUME_DOWN,
@@ -1342,6 +1421,8 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
     }
 
     private fun startFastPlayback(keyNumber: Int) {
+        // If locked, ignore new number keys (can't override while locked)
+        if (fastPlaybackLockActive) return
         if (isFastPlaybackFromKeyboardActive) return
         mediaController?.let { controller ->
             isFastPlaybackFromKeyboardActive = true
@@ -1358,14 +1439,15 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
             controller.setPlaybackSpeed(targetSpeed)
         }
     }
-
-    private fun stopFastPlayback() {
+    
+    private fun stopFastPlayback(force: Boolean = false) {
         if (!isFastPlaybackFromKeyboardActive) return
+        if (fastPlaybackLockActive && !force) return // Don't stop if locked, unless forced
         mediaController?.setPlaybackSpeed(originalPlaybackSpeed)
         hideTopInfo()
         isFastPlaybackFromKeyboardActive = false
     }
-
+    
     // Overload hideTopInfo to allow for a delay
     fun hideTopInfo(delayTimeMillis: Long) {
         lifecycleScope.launch {
