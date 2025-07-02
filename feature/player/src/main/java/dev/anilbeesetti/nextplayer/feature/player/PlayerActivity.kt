@@ -150,6 +150,8 @@ class PlayerActivity : AppCompatActivity() {
     private var fastPlaybackLockedSpeed: Float = 1.0f
     private var fastPlaybackLockedKey: Int? = null
 
+    private var hideTopInfoJob: Job? = null
+
     /**
      * Player
      */
@@ -1251,6 +1253,7 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
     }
 
     fun showTopInfo(info: String) {
+        hideTopInfoJob?.cancel()
         with(binding) {
             topInfoLayout.visibility = View.VISIBLE
             topInfoText.text = info
@@ -1286,6 +1289,7 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
 
     fun hideTopInfo() {
         binding.topInfoLayout.visibility = View.GONE
+        hideTopInfoJob = null
     }
 
     private fun resetExoContentFrameWidthAndHeight() {
@@ -1451,7 +1455,8 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
     
     // Overload hideTopInfo to allow for a delay
     fun hideTopInfo(delayTimeMillis: Long) {
-        lifecycleScope.launch {
+        hideTopInfoJob?.cancel()
+        hideTopInfoJob = lifecycleScope.launch {
             delay(delayTimeMillis)
             hideTopInfo()
         }
