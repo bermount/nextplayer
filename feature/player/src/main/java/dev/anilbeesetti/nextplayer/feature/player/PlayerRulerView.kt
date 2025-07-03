@@ -24,7 +24,7 @@ class PlayerRulerView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         
-    if (durationMs <= 0) return
+        if (durationMs <= 0) return
         
         val widthPx = width.toFloat()
         val widthPerMs = widthPx / durationMs
@@ -37,13 +37,13 @@ class PlayerRulerView @JvmOverloads constructor(
         )
         val longLineWidth = baseLineWidth * 2
         
-        val interval = 10 * 60_000L
-        
-        // Draw ticks at every interval from 0 to durationMs
-        var markerMs = 0L
-        while (markerMs <= durationMs) {
-            val isLong = ((markerMs / interval) % 3 == 0L)
-            val x = markerMs * widthPerMs  // left to right
+        val intervalMs = 10 * 60_000L
+
+        // Start one interval before the end, do not draw at durationMs or at 0ms
+        var markerMs = durationMs - intervalMs
+        while (markerMs > 0) {
+            val isLong = ((markerMs / intervalMs) % 3 == 0L)
+            val x = widthPx - (durationMs - markerMs) * widthPerMs
             
             linePaint.strokeWidth = if (isLong) longLineWidth else baseLineWidth
             val lineHeight = if (isLong) longLineHeight else baseLineHeight
@@ -51,16 +51,7 @@ class PlayerRulerView @JvmOverloads constructor(
             canvas.drawLine(
                 x, 0f, x, lineHeight, linePaint
             )
-            markerMs += interval
-        }
-
-        // Always ensure a tick at the right edge
-        if ((durationMs % interval) != 0L) {
-            val x = widthPx
-            linePaint.strokeWidth = longLineWidth
-            canvas.drawLine(
-                x, 0f, x, longLineHeight, linePaint
-            )
+            markerMs -= intervalMs
         }
     }
 }
