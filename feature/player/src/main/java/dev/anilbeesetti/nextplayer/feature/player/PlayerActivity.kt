@@ -283,7 +283,7 @@ class PlayerActivity : AppCompatActivity() {
         remainingTimeText = findViewById(R.id.remaining_time_text)
         
         val screenWidth = resources.displayMetrics.widthPixels
-        val scaledTextSizePx = screenWidth / 42f // Adjust divisor for your preferred size
+        val scaledTextSizePx = screenWidth / 48f // Adjust divisor for your preferred size
         val scaledTextSizeSp = scaledTextSizePx / resources.displayMetrics.scaledDensity
         
         finishTimeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledTextSizeSp)
