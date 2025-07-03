@@ -163,18 +163,17 @@
             tools:ignore="ContentDescription" />
     </LinearLayout>
 
+    <dev.anilbeesetti.nextplayer.feature.player.PlayerRulerView
+        android:id="@+id/playerRulerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"/>
+    
     <View
         android:id="@+id/thin_progress"
         android:layout_width="0dp"
         android:layout_height="1dp"
         android:layout_gravity="top"
         android:background="#ff0000" />
-
-    <dev.anilbeesetti.nextplayer.feature.player.PlayerRulerView
-        android:id="@+id/playerRulerView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top"/>
-
 
 </FrameLayout>
