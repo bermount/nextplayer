@@ -1303,6 +1303,10 @@ class PlayerActivity : AppCompatActivity() {
 
     //Update Video Finish Time Text
     private fun updateFinishTimeText() {
+        if (isPipActive) {
+            finishTimeText.visibility = View.GONE
+            return
+        }
         val finishMillis = finishTimeMillis ?: return
         
         // Format finish time as HH:mm
@@ -1320,6 +1324,10 @@ class PlayerActivity : AppCompatActivity() {
     
     // Update Remaining Time Text
     private fun updateRemainingTimeText(position: Long, duration: Long) {
+        if (isPipActive) {
+            remainingTimeText.visibility = View.GONE
+            return
+        }
         if (duration > 0 && position <= duration) {
             val remainingMs = duration - position
             val remainingMin = ((remainingMs + 59_999) / 60_000).toInt() // round up to minutes
