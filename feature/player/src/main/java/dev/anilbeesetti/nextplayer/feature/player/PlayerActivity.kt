@@ -285,19 +285,7 @@ class PlayerActivity : AppCompatActivity() {
             heightInDp,
             resources.displayMetrics
         ).toInt()
-
-        //Remaining Time Text
-        finishTimeText = findViewById(R.id.finish_time_text)
-        remainingTimeText = findViewById(R.id.remaining_time_text)
-        
-        val screenWidth = resources.displayMetrics.widthPixels
-        val scaledTextSizePx = screenWidth / 50f // Adjust divisor for your preferred size
-        val scaledTextSizeSp = scaledTextSizePx / resources.displayMetrics.scaledDensity
-        
-        finishTimeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledTextSizeSp)
-        remainingTimeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledTextSizeSp)
-        
-        
+     
         if (playerPreferences.controlButtonsPosition == ControlButtonsPosition.RIGHT) {
             extraControls.gravity = Gravity.END
         }
@@ -925,6 +913,17 @@ class PlayerActivity : AppCompatActivity() {
                 }
 
                 Player.STATE_READY -> {
+                    //Remaining Time Text
+                    finishTimeText = findViewById(R.id.finish_time_text)
+                    remainingTimeText = findViewById(R.id.remaining_time_text)
+                    
+                    val screenWidth = resources.displayMetrics.widthPixels
+                    val scaledTextSizePx = screenWidth / 50f // Adjust divisor for your preferred size
+                    val scaledTextSizeSp = scaledTextSizePx / resources.displayMetrics.scaledDensity
+                    
+                    finishTimeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledTextSizeSp)
+                    remainingTimeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledTextSizeSp)
+                    
                     binding.playerView.setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
                     mediaController?.let { setFinishTimeOnce(it.currentPosition, it.duration) }
                     isMediaItemReady = true
