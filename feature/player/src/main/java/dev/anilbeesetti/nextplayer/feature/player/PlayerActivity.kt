@@ -279,13 +279,15 @@ class PlayerActivity : AppCompatActivity() {
         ).toInt()
 
         //Remaining Time Text
+        finishTimeText = findViewById(R.id.finish_time_text)
+        remainingTimeText = findViewById(R.id.remaining_time_text)
+        
         val screenWidth = resources.displayMetrics.widthPixels
         val scaledTextSizePx = screenWidth / 42f // Adjust divisor for your preferred size
         val scaledTextSizeSp = scaledTextSizePx / resources.displayMetrics.scaledDensity
-        remainingTimeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledTextSizeSp)
-        finishTimeText = findViewById(R.id.finish_time_text)
+        
         finishTimeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledTextSizeSp)
-        remainingTimeText = findViewById(R.id.remaining_time_text)
+        remainingTimeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledTextSizeSp)
         
         
         if (playerPreferences.controlButtonsPosition == ControlButtonsPosition.RIGHT) {
