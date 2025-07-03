@@ -43,6 +43,7 @@ class PlayerRulerView @JvmOverloads constructor(
         var markerMs = durationMs - intervalMs
         while (markerMs > 0) {
             val intervalsFromRight = ((durationMs - markerMs) / intervalMs)
+            val isLong = (intervalsFromRight % 3 == 0L)
             val x = widthPx - (durationMs - markerMs) * widthPerMs
             
             linePaint.strokeWidth = if (isLong) longLineWidth else baseLineWidth
