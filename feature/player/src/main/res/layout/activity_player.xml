@@ -170,28 +170,32 @@
         android:layout_gravity="top"
         android:background="#ff0000" />
 
-    <TextView
-        android:id="@+id/finish_time_text"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
-        android:layout_marginTop="2dp"
-        android:layout_marginEnd="3dp"
-        android:text="14:32 (12m)"
-        android:textColor="#CCFAFAFA"
-        android:visibility="gone"/>
-    
-    <TextView
-        android:id="@+id/remaining_time_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_marginTop="1dp"
-        android:layout_marginEnd="3dp"
-        android:text="0:00"
-        android:textColor="#CCFAFAFA"
-        android:visibility="gone"
-        tools:text="12:17"
-        />
-    
+        android:orientation="vertical">
+        
+        <TextView
+            android:id="@+id/finish_time_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="3dp"
+            android:text="14:32 (12m)"
+            android:textColor="#CCFAFAFA"
+            android:visibility="gone" />
+        
+        <TextView
+            android:id="@+id/remaining_time_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:layout_marginEnd="3dp"
+            android:text="0:00"
+            android:textColor="#CCFAFAFA"
+            android:visibility="gone"
+            tools:text="12:17" />
+    </LinearLayout>
+
 </FrameLayout>
