@@ -3,10 +3,11 @@ plugins {
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 android {
-    namespace = "dev.anilbeesetti.nextplayer.core.data"
+    namespace = "dev.anilbeesetti.nextplayer.core.playback"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
@@ -24,30 +25,18 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:playback"))
-    implementation(project(":core:database"))
-    implementation(project(":core:media"))
     implementation(project(":core:common"))
     implementation(project(":core:model"))
+    implementation(project(":core:database"))
     implementation(project(":core:datastore"))
-
-    implementation(libs.timber)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.android)
-
-    // Media3
-    implementation(libs.androidx.media3.common)
-
-    implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.kotlinx.coroutines.guava)
+    implementation(libs.kotlinx.serialization.json)
+    implementation("androidx.documentfile:documentfile:1.0.1")
+    implementation(libs.timber)
 
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
-    kspAndroidTest(libs.hilt.compiler)
-
-    testImplementation(libs.junit4)
-    androidTestImplementation(libs.androidx.test.ext)
-    androidTestImplementation(libs.androidx.test.espresso.core)
 }

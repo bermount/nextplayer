@@ -6,8 +6,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.anilbeesetti.nextplayer.core.data.repository.PreferencesRepository
 import dev.anilbeesetti.nextplayer.core.model.ApplicationPreferences
 import javax.inject.Inject
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.MutableStateFlow 
 import kotlinx.coroutines.flow.stateIn
 
 @HiltViewModel
@@ -15,6 +17,13 @@ class MainActivityViewModel @Inject constructor(
     private val preferencesRepository: PreferencesRepository,
 ) : ViewModel() {
 
+    private val _showSyncDialog = MutableStateFlow(false)
+    val showSyncDialog = _showSyncDialog.asStateFlow()
+    
+    fun setShowSyncDialog(show: Boolean) {
+        _showSyncDialog.value = show
+    }
+    
     val uiState = preferencesRepository.applicationPreferences.map { preferences ->
         MainActivityUiState.Success(preferences)
     }.stateIn(

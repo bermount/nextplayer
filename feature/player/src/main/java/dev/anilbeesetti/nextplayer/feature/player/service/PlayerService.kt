@@ -83,30 +83,53 @@ class PlayerService : MediaSessionService() {
     private var isMediaItemReady = false
     private var currentVideoState: VideoState? = null
 
+    private var shouldSkipNextPositionSave = false
+
     private val playbackStateListener = object : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             super.onMediaItemTransition(mediaItem, reason)
             if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT) return
             if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO && !playerPreferences.autoplay) {
+                shouldSkipNextPositionSave = true
                 mediaSession?.player?.stop()
                 return
             }
             isMediaItemReady = false
             if (mediaItem != null) {
                 serviceScope.launch {
+                    // Get filename for syncing purposes
+                    val mediaUri = mediaItem.mediaId.toUri()
+                    val filename = this@PlayerService.getFilenameFromUri(mediaUri)                    
+                    
+                    // Sync playback position from DB and JSON, and get the most recent one
+                    val syncedPosition = mediaRepository.syncAndGetPlaybackPosition(mediaItem.mediaId, filename)
+                    
+                    // Get other video state information (speed, tracks etc.)
                     currentVideoState = mediaRepository.getVideoState(mediaItem.mediaId)
+                    
+                    // Set playback speed
                     mediaSession?.player?.setPlaybackSpeed(
                         currentVideoState?.playbackSpeed ?: playerPreferences.defaultPlaybackSpeed,
                     )
+                    // Seek to the synced position if available and resume is enabled
+                    val positionToSeek = syncedPosition?.takeIf { playerPreferences.resume == Resume.YES }
+                    if (positionToSeek != null && positionToSeek > 0) { // Only seek if position is greater than 0
+                        mediaSession?.player?.seekTo(positionToSeek)
+                    } else if (playerPreferences.resume == Resume.NO) {
+                        // If resume is disabled, ensure we start from 0 or the player's default start position
+                        mediaSession?.player?.seekTo(0)
+                    }
+                    
+                    // Restore audio/subtitle tracks if rememberSelections is enabled
                     currentVideoState?.let { state ->
-                        state.position?.takeIf { playerPreferences.resume == Resume.YES }?.let {
-                            mediaSession?.player?.seekTo(it)
-                        }
+                        if (!playerPreferences.rememberSelections) return@let
+                        state.audioTrackIndex?.let { mediaSession?.player?.switchTrack(C.TRACK_TYPE_AUDIO, it) }
+                        state.subtitleTrackIndex?.let { mediaSession?.player?.switchTrack(C.TRACK_TYPE_TEXT, it) }
                     }
                 }
             }
         }
-
+        
         override fun onPositionDiscontinuity(
             oldPosition: Player.PositionInfo,
             newPosition: Player.PositionInfo,
@@ -116,27 +139,34 @@ class PlayerService : MediaSessionService() {
             val oldMediaItem = oldPosition.mediaItem ?: return
 
             when (reason) {
-                DISCONTINUITY_REASON_SEEK,
+//                DISCONTINUITY_REASON_SEEK,
                 DISCONTINUITY_REASON_AUTO_TRANSITION,
                 -> {
                     val newMediaItem = newPosition.mediaItem
                     if (newMediaItem != null && oldMediaItem != newMediaItem) {
+                        val filename = this@PlayerService.getFilenameFromUri(oldMediaItem.mediaId.toUri())
                         mediaRepository.updateMediumPosition(
                             uri = oldMediaItem.mediaId,
+                            filename = filename,
                             position = oldPosition.positionMs.takeIf { reason == DISCONTINUITY_REASON_SEEK } ?: C.TIME_UNSET,
                         )
                     }
                 }
 
                 DISCONTINUITY_REASON_REMOVE -> {
-                    mediaRepository.updateMediumPosition(
-                        uri = oldMediaItem.mediaId,
-                        position = oldPosition.positionMs,
-                    )
+                    if (!shouldSkipNextPositionSave) {
+                        val filename = this@PlayerService.getFilenameFromUri(oldMediaItem.mediaId.toUri())
+                        mediaRepository.updateMediumPosition(
+                            uri = oldMediaItem.mediaId,
+                            filename = filename,
+                            position = oldPosition.positionMs,
+                        )
+                    }
                 }
 
                 else -> return
             }
+            shouldSkipNextPositionSave = false
         }
 
         override fun onTracksChanged(tracks: Tracks) {
@@ -158,23 +188,28 @@ class PlayerService : MediaSessionService() {
 
         override fun onPlaybackStateChanged(playbackState: Int) {
             super.onPlaybackStateChanged(playbackState)
-
+            
             if (playbackState == Player.STATE_ENDED || playbackState == Player.STATE_IDLE) {
                 mediaSession?.player?.trackSelectionParameters = TrackSelectionParameters.DEFAULT
                 mediaSession?.player?.setPlaybackSpeed(playerPreferences.defaultPlaybackSpeed)
             }
-
+            
             if (playbackState == Player.STATE_READY) {
-                mediaSession?.player?.let {
-                    mediaRepository.updateMediumLastPlayedTime(
-                        uri = it.currentMediaItem?.mediaId ?: return@let,
-                        lastPlayedTime = System.currentTimeMillis(),
-                    )
+                mediaSession?.player?.currentMediaItem?.mediaId?.toUri()?.let { mediaUri ->
+                    val filename = getFilenameFromUri(mediaUri)
+                    val currentPosition = mediaSession?.player?.currentPosition ?: 0L
+                    if (filename != null) {
+                        mediaRepository.updateMediumPosition(
+                            uri = mediaUri.toString(),
+                            filename = filename,
+                            position = currentPosition,
+                        )
+                    }
                 }
             }
         }
     }
-
+    
     private val mediaSessionCallback = object : MediaSession.Callback {
         override fun onConnect(
             session: MediaSession,
@@ -235,9 +270,11 @@ class PlayerService : MediaSessionService() {
                         val textTracks = player.currentTracks.groups.filter {
                             it.type == C.TRACK_TYPE_TEXT && it.isSupported
                         }
+                        val filename = getFilenameFromUri(currentMediaItem.mediaId.toUri()) ?: currentMediaItem.mediaId
 
                         mediaRepository.updateMediumPosition(
                             uri = currentMediaItem.mediaId,
+                            filename = filename,
                             position = player.currentPosition,
                         )
                         mediaRepository.updateMediumSubtitleTrack(

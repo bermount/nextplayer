@@ -139,6 +139,8 @@ class PlayerActivity : AppCompatActivity() {
     private var finishTimeMillis: Long? = null
     private var progressUpdateJob: Job? = null
 
+    private var originalPlaybackSpeed: Float = 1.0f
+    private var isFastPlaybackFromKeyboardActive: Boolean = false
 
     private var playInBackground: Boolean = false
     private var isIntentNew: Boolean = true
@@ -148,7 +150,11 @@ class PlayerActivity : AppCompatActivity() {
     private val shouldFastSeek: Boolean
         get() = playerPreferences.shouldFastSeek(mediaController?.duration ?: C.TIME_UNSET)
 
-    private lateinit var remainingTimeText: TextView
+    private var fastPlaybackLockActive: Boolean = false
+    private var fastPlaybackLockedSpeed: Float = 1.0f
+    private var fastPlaybackLockedKey: Int? = null
+
+    private var hideTopInfoJob: Job? = null
 
     /**
      * Player
@@ -954,8 +960,70 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
+    private fun getFastPlaybackKeyNumber(keyCode: Int): Int =
+    when (keyCode) {
+        KeyEvent.KEYCODE_1, KeyEvent.KEYCODE_NUMPAD_1 -> 1
+        KeyEvent.KEYCODE_2, KeyEvent.KEYCODE_NUMPAD_2 -> 2
+        KeyEvent.KEYCODE_3, KeyEvent.KEYCODE_NUMPAD_3 -> 3
+        KeyEvent.KEYCODE_4, KeyEvent.KEYCODE_NUMPAD_4 -> 4
+        KeyEvent.KEYCODE_5, KeyEvent.KEYCODE_NUMPAD_5 -> 5
+        KeyEvent.KEYCODE_6, KeyEvent.KEYCODE_NUMPAD_6 -> 6
+        else -> 1
+    }
+
+    private fun lockFastPlayback() {
+        if (mediaController != null) {
+            fastPlaybackLockActive = true
+            fastPlaybackLockedSpeed = mediaController!!.playbackParameters.speed
+            showTopInfo("Speed locked: %.1fx".format(Locale.US, fastPlaybackLockedSpeed))
+        }
+    }
+    
+    private fun unlockFastPlayback() {
+        if (mediaController != null) {
+            fastPlaybackLockActive = false
+            fastPlaybackLockedKey = null
+            stopFastPlayback()
+            showTopInfo("Speed unlocked")
+            hideTopInfo(HIDE_DELAY_MILLIS)
+        }
+    }
+    
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (isControlsLocked) return super.onKeyDown(keyCode, event)
+
+        val isNumPadKey = keyCode in listOf(
+            KeyEvent.KEYCODE_1, KeyEvent.KEYCODE_NUMPAD_1,
+            KeyEvent.KEYCODE_2, KeyEvent.KEYCODE_NUMPAD_2,
+            KeyEvent.KEYCODE_3, KeyEvent.KEYCODE_NUMPAD_3,
+            KeyEvent.KEYCODE_4, KeyEvent.KEYCODE_NUMPAD_4,
+            KeyEvent.KEYCODE_5, KeyEvent.KEYCODE_NUMPAD_5,
+            KeyEvent.KEYCODE_6, KeyEvent.KEYCODE_NUMPAD_6
+        )
+        if (isNumPadKey) {
+            if (fastPlaybackLockActive) {
+                // Unlock and switch to the new fast playback
+                unlockFastPlayback()
+                startFastPlayback(getFastPlaybackKeyNumber(keyCode))
+                fastPlaybackLockedKey = keyCode
+            } else {
+                startFastPlayback(getFastPlaybackKeyNumber(keyCode))
+                fastPlaybackLockedKey = keyCode
+            }
+            return true
+        }
+        
+        if (keyCode == KeyEvent.KEYCODE_NUMPAD_DOT) {
+            if (!fastPlaybackLockActive && fastPlaybackLockedKey != null) {
+                lockFastPlayback()
+            } else if (fastPlaybackLockActive) {
+                unlockFastPlayback()
+            }
+            return true
+        }
+        
         when (keyCode) {
+            // Volume Controls (Existing)
             KeyEvent.KEYCODE_VOLUME_UP,
             KeyEvent.KEYCODE_DPAD_UP,
             -> {
@@ -965,7 +1033,6 @@ class PlayerActivity : AppCompatActivity() {
                     return true
                 }
             }
-
             KeyEvent.KEYCODE_VOLUME_DOWN,
             KeyEvent.KEYCODE_DPAD_DOWN,
             -> {
@@ -976,81 +1043,120 @@ class PlayerActivity : AppCompatActivity() {
                 }
             }
 
-            KeyEvent.KEYCODE_MEDIA_PLAY,
-            KeyEvent.KEYCODE_MEDIA_PAUSE,
+            // Play/Pause Controls
+            KeyEvent.KEYCODE_SPACE,
+            KeyEvent.KEYCODE_ENTER,
+            KeyEvent.KEYCODE_NUMPAD_ENTER,
+            KeyEvent.KEYCODE_8,
+            KeyEvent.KEYCODE_NUMPAD_8,
             KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE,
-            KeyEvent.KEYCODE_BUTTON_SELECT,
             -> {
-                when {
-                    keyCode == KeyEvent.KEYCODE_MEDIA_PAUSE -> mediaController?.pause()
-                    keyCode == KeyEvent.KEYCODE_MEDIA_PLAY -> mediaController?.play()
-                    mediaController?.isPlaying == true -> mediaController?.pause()
-                    else -> mediaController?.play()
+                binding.playerView.togglePlayPause()
+                return true
+            }
+            KeyEvent.KEYCODE_MEDIA_PLAY -> {
+                mediaController?.play()
+                return true
+            }
+            KeyEvent.KEYCODE_MEDIA_PAUSE -> {
+                mediaController?.pause()
+                return true
+            }
+
+            // Seek Controls
+            KeyEvent.KEYCODE_DPAD_LEFT,
+            KeyEvent.KEYCODE_7,
+            KeyEvent.KEYCODE_NUMPAD_7,
+            KeyEvent.KEYCODE_MEDIA_REWIND,
+            -> {
+                mediaController?.run {
+                    val newPosition = currentPosition - playerPreferences.seekIncrement.toMillis
+                    seekBack(newPosition.coerceAtLeast(0), shouldFastSeek)
+                    showPlayerInfo(
+                        info = Utils.formatDurationMillis(newPosition),
+                        subInfo = "-${playerPreferences.seekIncrement}s"
+                    )
+                }
+                return true
+            }
+            KeyEvent.KEYCODE_DPAD_RIGHT,
+            KeyEvent.KEYCODE_9,
+            KeyEvent.KEYCODE_NUMPAD_9,
+            KeyEvent.KEYCODE_MEDIA_FAST_FORWARD,
+            -> {
+                mediaController?.run {
+                    val newPosition = currentPosition + playerPreferences.seekIncrement.toMillis
+                    seekForward(newPosition.coerceAtMost(duration), shouldFastSeek)
+                    showPlayerInfo(
+                        info = Utils.formatDurationMillis(newPosition),
+                        subInfo = "+${playerPreferences.seekIncrement}s"
+                    )
                 }
                 return true
             }
 
-            KeyEvent.KEYCODE_BUTTON_START,
-            KeyEvent.KEYCODE_BUTTON_A,
-            KeyEvent.KEYCODE_SPACE,
+            // Playback Speed Controls
+//            KeyEvent.KEYCODE_Z -> {
+//                changePlaybackSpeed(increase = false)
+//                return true
+//            }
+//            KeyEvent.KEYCODE_X -> {
+//                resetPlaybackSpeed()
+//                return true
+//            }
+//            KeyEvent.KEYCODE_C -> {
+//                changePlaybackSpeed(increase = true)
+//                return true
+//            }
+
+            // Fast Playback (Hold-to-Seek)
+            KeyEvent.KEYCODE_1,
+            KeyEvent.KEYCODE_NUMPAD_1,
             -> {
-                if (!binding.playerView.isControllerFullyVisible) {
-                    binding.playerView.togglePlayPause()
-                    return true
-                }
+                startFastPlayback(1)
+                return true
+            }
+            KeyEvent.KEYCODE_2,
+            KeyEvent.KEYCODE_NUMPAD_2,
+            -> {
+                startFastPlayback(2)
+                return true
+            }
+            KeyEvent.KEYCODE_3,
+            KeyEvent.KEYCODE_NUMPAD_3,
+            -> {
+                startFastPlayback(3)
+                return true
+            }
+            KeyEvent.KEYCODE_4,
+            KeyEvent.KEYCODE_NUMPAD_4,
+            -> {
+                startFastPlayback(4)
+                return true
+            }
+            KeyEvent.KEYCODE_5,
+            KeyEvent.KEYCODE_NUMPAD_5,
+            -> {
+                startFastPlayback(5)
+                return true
+            }
+            KeyEvent.KEYCODE_6,
+            KeyEvent.KEYCODE_NUMPAD_6,
+            -> {
+                startFastPlayback(6)
+                return true
             }
 
-            KeyEvent.KEYCODE_DPAD_LEFT,
-            KeyEvent.KEYCODE_BUTTON_L2,
-            KeyEvent.KEYCODE_MEDIA_REWIND,
-            -> {
-                if (!binding.playerView.isControllerFullyVisible || keyCode == KeyEvent.KEYCODE_MEDIA_REWIND) {
-                    mediaController?.run {
-                        if (scrubStartPosition == -1L) {
-                            scrubStartPosition = currentPosition
-                        }
-                        val position = (currentPosition - 10_000).coerceAtLeast(0L)
-                        seekBack(position, shouldFastSeek)
-                        showPlayerInfo(
-                            info = Utils.formatDurationMillis(position),
-                            subInfo = "[${Utils.formatDurationMillisSign(position - scrubStartPosition)}]",
-                        )
-                        return true
-                    }
-                }
-            }
+            // Show/Hide Controller
+//            KeyEvent.KEYCODE_DPAD_CENTER -> {
+//                if (!binding.playerView.isControllerFullyVisible) {
+//                    binding.playerView.showController()
+//                }
+                // Let the system handle it to press buttons on the controller
+//                return super.onKeyDown(keyCode, event)
+//            }
 
-            KeyEvent.KEYCODE_DPAD_RIGHT,
-            KeyEvent.KEYCODE_BUTTON_R2,
-            KeyEvent.KEYCODE_MEDIA_FAST_FORWARD,
-            -> {
-                if (!binding.playerView.isControllerFullyVisible || keyCode == KeyEvent.KEYCODE_MEDIA_FAST_FORWARD) {
-                    mediaController?.run {
-                        if (scrubStartPosition == -1L) {
-                            scrubStartPosition = currentPosition
-                        }
-
-                        val position = (currentPosition + 10_000).coerceAtMost(duration)
-                        seekForward(position, shouldFastSeek)
-                        showPlayerInfo(
-                            info = Utils.formatDurationMillis(position),
-                            subInfo = "[${Utils.formatDurationMillisSign(position - scrubStartPosition)}]",
-                        )
-                        return true
-                    }
-                }
-            }
-
-            KeyEvent.KEYCODE_ENTER,
-            KeyEvent.KEYCODE_DPAD_CENTER,
-            KeyEvent.KEYCODE_NUMPAD_ENTER,
-            -> {
-                if (!binding.playerView.isControllerFullyVisible) {
-                    binding.playerView.showController()
-                    return true
-                }
-            }
-
+            // Back button behavior (Existing)
             KeyEvent.KEYCODE_BACK -> {
                 if (binding.playerView.isControllerFullyVisible && mediaController?.isPlaying == true && isDeviceTvBox()) {
                     binding.playerView.hideController()
@@ -1061,8 +1167,27 @@ class PlayerActivity : AppCompatActivity() {
         return super.onKeyDown(keyCode, event)
     }
 
-    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
-        when (keyCode) {
+override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+    if (isControlsLocked) return super.onKeyUp(keyCode, event)
+
+    val isNumPadKey = keyCode in listOf(
+        KeyEvent.KEYCODE_1, KeyEvent.KEYCODE_NUMPAD_1,
+        KeyEvent.KEYCODE_2, KeyEvent.KEYCODE_NUMPAD_2,
+        KeyEvent.KEYCODE_3, KeyEvent.KEYCODE_NUMPAD_3,
+        KeyEvent.KEYCODE_4, KeyEvent.KEYCODE_NUMPAD_4,
+        KeyEvent.KEYCODE_5, KeyEvent.KEYCODE_NUMPAD_5,
+        KeyEvent.KEYCODE_6, KeyEvent.KEYCODE_NUMPAD_6
+    )
+    if (isNumPadKey) {
+        if (!fastPlaybackLockActive) {
+            stopFastPlayback()
+            fastPlaybackLockedKey = null
+        }
+        return true
+    }
+        
+    when (keyCode) {
+            // Hide volume indicator (Existing)
             KeyEvent.KEYCODE_VOLUME_UP,
             KeyEvent.KEYCODE_VOLUME_DOWN,
             KeyEvent.KEYCODE_DPAD_UP,
@@ -1072,14 +1197,44 @@ class PlayerActivity : AppCompatActivity() {
                 return true
             }
 
+            // Hide seek indicator (Existing)
             KeyEvent.KEYCODE_DPAD_LEFT,
-            KeyEvent.KEYCODE_BUTTON_L2,
+            KeyEvent.KEYCODE_7,
+            KeyEvent.KEYCODE_NUMPAD_7,
             KeyEvent.KEYCODE_MEDIA_REWIND,
             KeyEvent.KEYCODE_DPAD_RIGHT,
-            KeyEvent.KEYCODE_BUTTON_R2,
+            KeyEvent.KEYCODE_9,
+            KeyEvent.KEYCODE_NUMPAD_9,
             KeyEvent.KEYCODE_MEDIA_FAST_FORWARD,
             -> {
                 hidePlayerInfo()
+                return true
+            }
+
+            // Hide speed indicator after a delay
+//            KeyEvent.KEYCODE_Z,
+//            KeyEvent.KEYCODE_X,
+//            KeyEvent.KEYCODE_C,
+//            -> {
+//                hideTopInfo(HIDE_DELAY_MILLIS)
+//                return true
+//            }
+
+            // Stop Fast Playback on key release
+            KeyEvent.KEYCODE_1,
+            KeyEvent.KEYCODE_NUMPAD_1,
+            KeyEvent.KEYCODE_2,
+            KeyEvent.KEYCODE_NUMPAD_2,
+            KeyEvent.KEYCODE_3,
+            KeyEvent.KEYCODE_NUMPAD_3,
+            KeyEvent.KEYCODE_4,
+            KeyEvent.KEYCODE_NUMPAD_4,
+            KeyEvent.KEYCODE_5,
+            KeyEvent.KEYCODE_NUMPAD_5,
+            KeyEvent.KEYCODE_6,
+            KeyEvent.KEYCODE_NUMPAD_6,
+            -> {
+                stopFastPlayback()
                 return true
             }
         }
@@ -1129,6 +1284,7 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     fun showTopInfo(info: String) {
+        hideTopInfoJob?.cancel()
         with(binding) {
             topInfoLayout.visibility = View.VISIBLE
             topInfoText.text = info
@@ -1164,6 +1320,7 @@ class PlayerActivity : AppCompatActivity() {
 
     fun hideTopInfo() {
         binding.topInfoLayout.visibility = View.GONE
+        hideTopInfoJob = null
     }
 
     private fun resetExoContentFrameWidthAndHeight() {
@@ -1339,6 +1496,62 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
     
+    private fun changePlaybackSpeed(increase: Boolean) {
+        mediaController?.let { controller ->
+            val currentSpeed = controller.playbackParameters.speed
+            // Increase or decrease speed by 0.10f, ensuring it doesn't go below 0.10
+            val newSpeed = if (increase) {
+                currentSpeed + 0.10f
+            } else {
+                (currentSpeed - 0.10f).coerceAtLeast(0.10f)
+            }
+            controller.setPlaybackSpeed(newSpeed)
+            showTopInfo(getString(coreUiR.string.fast_playback_speed, "%.2f".format(newSpeed)))
+        }
+    }
+
+    private fun resetPlaybackSpeed() {
+        mediaController?.setPlaybackSpeed(1.0f)
+        showTopInfo(getString(coreUiR.string.fast_playback_speed, "1.00"))
+    }
+
+    private fun startFastPlayback(keyNumber: Int) {
+        // If locked, ignore new number keys (can't override while locked)
+        if (fastPlaybackLockActive) return
+        if (isFastPlaybackFromKeyboardActive) return
+        mediaController?.let { controller ->
+            isFastPlaybackFromKeyboardActive = true
+            originalPlaybackSpeed = controller.playbackParameters.speed
+            val targetSpeed = when (keyNumber) {
+                1 -> (2 * originalPlaybackSpeed + 1 * playerPreferences.longPressControlsSpeed) / 3f
+                2 -> (1 * originalPlaybackSpeed + 2 * playerPreferences.longPressControlsSpeed) / 3f
+                3 -> playerPreferences.longPressControlsSpeed
+                4 -> playerPreferences.longPressControlsSpeed + 0.25f
+                5 -> playerPreferences.longPressControlsSpeed + 0.5f
+                else -> playerPreferences.longPressControlsSpeed + 0.75f
+            }
+            showTopInfo(getString(coreUiR.string.fast_playback_speed, targetSpeed))
+            controller.setPlaybackSpeed(targetSpeed)
+        }
+    }
+    
+    private fun stopFastPlayback(force: Boolean = false) {
+        if (!isFastPlaybackFromKeyboardActive) return
+        if (fastPlaybackLockActive && !force) return // Don't stop if locked, unless forced
+        mediaController?.setPlaybackSpeed(originalPlaybackSpeed)
+        hideTopInfo()
+        isFastPlaybackFromKeyboardActive = false
+    }
+    
+    // Overload hideTopInfo to allow for a delay
+    fun hideTopInfo(delayTimeMillis: Long) {
+        hideTopInfoJob?.cancel()
+        hideTopInfoJob = lifecycleScope.launch {
+            delay(delayTimeMillis)
+            hideTopInfo()
+        }
+    }
+
     companion object {
         const val HIDE_DELAY_MILLIS = 1000L
         const val PIP_INTENT_ACTION = "pip_action"
