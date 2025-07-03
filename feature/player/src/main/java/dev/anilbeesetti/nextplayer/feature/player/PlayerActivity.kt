@@ -257,7 +257,7 @@ class PlayerActivity : AppCompatActivity() {
         extraControls = binding.playerView.findViewById(R.id.extra_controls)
 
         thinProgress = binding.thinProgress
-        playerRulerView = findViewById(R.id.playerRulerView)
+        playerRulerView = binding.playerRulerView
 
         // Adjust progress bar thickness based on screen density
         val density = resources.displayMetrics.density
