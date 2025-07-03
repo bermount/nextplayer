@@ -924,7 +924,13 @@ class PlayerActivity : AppCompatActivity() {
 
                 Player.STATE_READY -> {
                     binding.playerView.setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
-                    mediaController?.let { setFinishTimeOnce(it.currentPosition, it.duration) }
+                    mediaController?.let {
+                        setFinishTimeOnce(it.currentPosition, it.duration)
+                        lifecycleScope.launch {
+                            delay(1000)
+                            setFinishTimeOnce(it.currentPosition, it.duration)
+                        }
+                    }
                     isMediaItemReady = true
                     isFrameRendered = true
                 }
