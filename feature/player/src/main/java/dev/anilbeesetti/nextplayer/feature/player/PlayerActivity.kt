@@ -893,8 +893,7 @@ class PlayerActivity : AppCompatActivity() {
                     mediaController?.let { controller ->
                         val durationMs = controller.duration
                         if (durationMs > 0) {
-                            playerRulerView.setDuration(durationMs)
-                            playerRulerView.invalidate()
+                            playerRulerView.durationMs = durationMs
                         }
                     }
                 }
