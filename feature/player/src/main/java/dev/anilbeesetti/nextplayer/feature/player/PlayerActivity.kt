@@ -257,6 +257,7 @@ class PlayerActivity : AppCompatActivity() {
         extraControls = binding.playerView.findViewById(R.id.extra_controls)
 
         thinProgress = binding.thinProgress
+        playerRulerView = findViewById(R.id.playerRulerView)
 
         // Adjust progress bar thickness based on screen density
         val density = resources.displayMetrics.density
@@ -888,6 +889,14 @@ class PlayerActivity : AppCompatActivity() {
                     binding.playerView.setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
                     isMediaItemReady = true
                     isFrameRendered = true
+
+                    mediaController?.let { controller ->
+                        val durationMs = controller.duration
+                        if (durationMs > 0) {
+                            playerRulerView.setDuration(durationMs)
+                            playerRulerView.invalidate()
+                        }
+                    }
                 }
 
                 else -> {}
