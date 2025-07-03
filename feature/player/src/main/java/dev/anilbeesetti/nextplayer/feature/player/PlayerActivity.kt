@@ -100,7 +100,9 @@ import dev.anilbeesetti.nextplayer.feature.player.utils.PlayerApi
 import dev.anilbeesetti.nextplayer.feature.player.utils.PlayerGestureHelper
 import dev.anilbeesetti.nextplayer.feature.player.utils.VolumeManager
 import dev.anilbeesetti.nextplayer.feature.player.utils.toMillis
+import java.text.SimpleDateFormat
 import java.util.Locale
+import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -133,6 +135,8 @@ class PlayerActivity : AppCompatActivity() {
     private var hideInfoLayoutJob: Job? = null
     
     private lateinit var thinProgress: View
+    private lateinit var finishTimeText: TextView
+    private var finishTimeMillis: Long? = null
     private var progressUpdateJob: Job? = null
 
     private var originalPlaybackSpeed: Float = 1.0f
@@ -266,13 +270,13 @@ class PlayerActivity : AppCompatActivity() {
         extraControls = binding.playerView.findViewById(R.id.extra_controls)
 
         thinProgress = binding.thinProgress
-
+        
         // Adjust progress bar thickness based on screen density
         val density = resources.displayMetrics.density
         val heightInDp = when {
             density <= 2.0f -> 2f
 //            density <= 1.5f -> 2f // For medium-resolution screens (hdpi)
-            else -> 1f
+            else -> 1.2f
         }
         thinProgress.layoutParams.height = TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP,
@@ -280,6 +284,18 @@ class PlayerActivity : AppCompatActivity() {
             resources.displayMetrics
         ).toInt()
 
+        //Remaining Time Text
+        finishTimeText = findViewById(R.id.finish_time_text)
+        remainingTimeText = findViewById(R.id.remaining_time_text)
+        
+        val screenWidth = resources.displayMetrics.widthPixels
+        val scaledTextSizePx = screenWidth / 50f // Adjust divisor for your preferred size
+        val scaledTextSizeSp = scaledTextSizePx / resources.displayMetrics.scaledDensity
+        
+        finishTimeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledTextSizeSp)
+        remainingTimeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledTextSizeSp)
+        
+        
         if (playerPreferences.controlButtonsPosition == ControlButtonsPosition.RIGHT) {
             extraControls.gravity = Gravity.END
         }
@@ -451,6 +467,11 @@ class PlayerActivity : AppCompatActivity() {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         isPipActive = isInPictureInPictureMode
         if (isInPictureInPictureMode) {
+            
+            // Hide finish time and remaining time in PiP mode
+            finishTimeText.visibility = View.GONE
+            remainingTimeText.visibility = View.GONE
+            
             binding.playerView.subtitleView?.setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION)
             playerUnlockControls.visibility = View.INVISIBLE
             pipBroadcastReceiver = object : BroadcastReceiver() {
@@ -471,6 +492,13 @@ class PlayerActivity : AppCompatActivity() {
                 registerReceiver(pipBroadcastReceiver, IntentFilter(PIP_INTENT_ACTION))
             }
         } else {
+            
+            // Restore finish/remaining time based on current logic
+            updateFinishTimeText()
+            mediaController?.let {
+                updateRemainingTimeText(it.currentPosition, it.duration)
+            }
+            
             binding.playerView.subtitleView?.setFixedTextSize(TypedValue.COMPLEX_UNIT_SP, playerPreferences.subtitleTextSize.toFloat())
             if (!isControlsLocked) {
                 playerUnlockControls.visibility = View.VISIBLE
@@ -881,6 +909,7 @@ class PlayerActivity : AppCompatActivity() {
                     // Set progress to full width on completion
                     thinProgress.layoutParams.width = resources.displayMetrics.widthPixels
                     thinProgress.requestLayout()
+                    finishTimeMillis = null
                     finish()
                 }
                 Player.STATE_IDLE -> {
@@ -895,6 +924,7 @@ class PlayerActivity : AppCompatActivity() {
 
                 Player.STATE_READY -> {
                     binding.playerView.setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
+                    mediaController?.let { setFinishTimeOnce(it.currentPosition, it.duration) }
                     isMediaItemReady = true
                     isFrameRendered = true
                 }
@@ -913,6 +943,7 @@ class PlayerActivity : AppCompatActivity() {
             )
             setResult(Activity.RESULT_OK, result)
         }
+        finishTimeMillis = null
         stopProgressUpdater()
         super.finish()
     }
@@ -1371,16 +1402,20 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
                         // Calculate the width of the progress bar
                         val progressWidth = (currentPosition.toFloat() / duration * screenWidth).toInt()
 
+                        // Update Finish Time Text
+                        updateFinishTimeText()
+
                         // Update the UI on the main thread
                         withContext(Dispatchers.Main) {
                             thinProgress.visibility = View.VISIBLE
                             val params = thinProgress.layoutParams
                             params.width = progressWidth
                             thinProgress.layoutParams = params
+                            updateRemainingTimeText(currentPosition, duration)
                         }
                     }
                 }
-                delay(250) // Update interval (e.g., 4 times a second)
+                delay(250) // Update interval
             }
         }
     }
@@ -1400,12 +1435,67 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
             val params = thinProgress.layoutParams
             params.width = progressWidth
             thinProgress.layoutParams = params
+            updateRemainingTimeText(position, duration)
             thinProgress.visibility = View.VISIBLE
         } else {
             thinProgress.visibility = View.GONE
         }
     }
 
+    //Set Video Finish Time Text
+    private fun setFinishTimeOnce(currentPos: Long, duration: Long) {
+        if (finishTimeMillis != null) return  // Already set
+        if (duration > 0 && currentPos <= duration) {
+            val remainingMs = duration - currentPos
+            val remainingMin = ((remainingMs + 59_999) / 60_000).toInt()
+            val now = System.currentTimeMillis()
+            finishTimeMillis = now + remainingMin * 60_000L
+            finishTimeText.visibility = View.VISIBLE
+            // Immediately update the text at start
+            updateFinishTimeText()
+        } else {
+            finishTimeText.visibility = View.GONE
+        }
+    }
+
+    //Update Video Finish Time Text
+    private fun updateFinishTimeText() {
+        if (isPipActive) {
+            finishTimeText.visibility = View.GONE
+            return
+        }
+        val finishMillis = finishTimeMillis ?: return
+        
+        // Format finish time as HH:mm
+        val finishTimeStr = SimpleDateFormat("HH:mm", Locale.getDefault())
+            .format(Date(finishMillis))
+            
+        // Time left until finish time (round up to the next minute)
+        val msLeft = finishMillis - System.currentTimeMillis()
+        val minLeft = if (msLeft > 0) ((msLeft + 59_999) / 60_000).toInt() else 0
+        
+        val showText = if (minLeft > 0) "$finishTimeStr (${minLeft}m)" else "$finishTimeStr (<1m)"
+        finishTimeText.text = showText
+        finishTimeText.visibility = View.VISIBLE
+    }
+    
+    // Update Remaining Time Text
+    private fun updateRemainingTimeText(position: Long, duration: Long) {
+        if (isPipActive) {
+            remainingTimeText.visibility = View.GONE
+            return
+        }
+        if (duration > 0 && position <= duration) {
+            val remainingMs = duration - position
+            val remainingMin = ((remainingMs + 59_999) / 60_000).toInt() // round up to minutes
+            val text = if (remainingMin > 0) "${remainingMin}m" else "<1m"
+            remainingTimeText.text = text
+            remainingTimeText.visibility = View.VISIBLE
+        } else {
+            remainingTimeText.visibility = View.GONE
+        }
+    }
+    
     private fun changePlaybackSpeed(increase: Boolean) {
         mediaController?.let { controller ->
             val currentSpeed = controller.playbackParameters.speed
