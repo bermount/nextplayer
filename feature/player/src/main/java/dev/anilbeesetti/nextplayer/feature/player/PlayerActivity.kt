@@ -132,6 +132,8 @@ class PlayerActivity : AppCompatActivity() {
     private var hideInfoLayoutJob: Job? = null
     
     private lateinit var thinProgress: View
+    private lateinit var finishTimeText: TextView
+    private var finishTimeMillis: Long? = null
     private var progressUpdateJob: Job? = null
 
 
@@ -259,8 +261,10 @@ class PlayerActivity : AppCompatActivity() {
         extraControls = binding.playerView.findViewById(R.id.extra_controls)
 
         thinProgress = binding.thinProgress
+        finishTimeText = findViewById(R.id.finish_time_text)
+        finishTimeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledTextSizeSp)
         remainingTimeText = findViewById(R.id.remaining_time_text)
-
+        
         // Adjust progress bar thickness based on screen density
         val density = resources.displayMetrics.density
         val heightInDp = when {
@@ -882,6 +886,7 @@ class PlayerActivity : AppCompatActivity() {
                     // Set progress to full width on completion
                     thinProgress.layoutParams.width = resources.displayMetrics.widthPixels
                     thinProgress.requestLayout()
+                    finishTimeMillis = null
                     finish()
                 }
                 Player.STATE_IDLE -> {
@@ -896,6 +901,7 @@ class PlayerActivity : AppCompatActivity() {
 
                 Player.STATE_READY -> {
                     binding.playerView.setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
+                    mediaController?.let { setFinishTimeOnce(it.currentPosition, it.duration) }
                     isMediaItemReady = true
                     isFrameRendered = true
                 }
@@ -914,6 +920,7 @@ class PlayerActivity : AppCompatActivity() {
             )
             setResult(Activity.RESULT_OK, result)
         }
+        finishTimeMillis = null
         stopProgressUpdater()
         super.finish()
     }
@@ -1221,6 +1228,9 @@ class PlayerActivity : AppCompatActivity() {
                         // Calculate the width of the progress bar
                         val progressWidth = (currentPosition.toFloat() / duration * screenWidth).toInt()
 
+                        // Update Finish Time Text
+                        updateFinishTimeText()
+
                         // Update the UI on the main thread
                         withContext(Dispatchers.Main) {
                             thinProgress.visibility = View.VISIBLE
@@ -1231,7 +1241,7 @@ class PlayerActivity : AppCompatActivity() {
                         }
                     }
                 }
-                delay(250) // Update interval (e.g., 4 times a second)
+                delay(250) // Update interval
             }
         }
     }
@@ -1258,6 +1268,39 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
+    //Set Video Finish Time Text
+    private fun setFinishTimeOnce(currentPos: Long, duration: Long) {
+        if (finishTimeMillis != null) return  // Already set
+        if (duration > 0 && currentPos <= duration) {
+            val remainingMs = duration - currentPos
+            val remainingMin = ((remainingMs + 59_999) / 60_000).toInt()
+            val now = System.currentTimeMillis()
+            finishTimeMillis = now + remainingMin * 60_000L
+            finishTimeText.visibility = View.VISIBLE
+            // Immediately update the text at start
+            updateFinishTimeText()
+        } else {
+            finishTimeText.visibility = View.GONE
+        }
+    }
+
+    //Update Video Finish Time Text
+    private fun updateFinishTimeText() {
+        val finishMillis = finishTimeMillis ?: return
+        
+        // Format finish time as HH:mm
+        val finishTimeStr = SimpleDateFormat("HH:mm", Locale.getDefault())
+            .format(Date(finishMillis))
+            
+        // Time left until finish time (round up to the next minute)
+        val msLeft = finishMillis - System.currentTimeMillis()
+        val minLeft = if (msLeft > 0) ((msLeft + 59_999) / 60_000).toInt() else 0
+        
+        val showText = if (minLeft > 0) "$finishTimeStr (${minLeft}m)" else "$finishTimeStr (<1m)"
+        finishTimeText.text = showText
+        finishTimeText.visibility = View.VISIBLE
+    }
+    
     // Update Remaining Time Text
     private fun updateRemainingTimeText(position: Long, duration: Long) {
         if (duration > 0 && position <= duration) {
