@@ -150,6 +150,8 @@ class PlayerActivity : AppCompatActivity() {
     private val shouldFastSeek: Boolean
         get() = playerPreferences.shouldFastSeek(mediaController?.duration ?: C.TIME_UNSET)
 
+    private lateinit var remainingTimeText: TextView
+
     private var fastPlaybackLockActive: Boolean = false
     private var fastPlaybackLockedSpeed: Float = 1.0f
     private var fastPlaybackLockedKey: Int? = null
