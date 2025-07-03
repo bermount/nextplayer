@@ -22,35 +22,38 @@ class PlayerRulerView @JvmOverloads constructor(
     var thinBarHeightPx: Float = 2f
 
     override fun onDraw(canvas: Canvas) {
+    
         super.onDraw(canvas)
+
         if (durationMs <= 0) return
 
-        val widthPerMs = width.toFloat() / durationMs
+        val widthPx = width.toFloat()
+        val widthPerMs = widthPx / durationMs
 
         val baseLineHeight = thinBarHeightPx
         val longLineHeight = baseLineHeight * 1.5f
-
+        
         val baseLineWidth = TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP, 1f, resources.displayMetrics
         )
         val longLineWidth = baseLineWidth * 2
 
-        val firstUnplayedMs = positionMs.coerceAtLeast(0L)
+        val currentPosMs = positionMs.coerceAtLeast(0L)
         val lastMs = durationMs
-
-        // Start from next 10min after current position
-        var markerMs = ((firstUnplayedMs / (10 * 60_000L)) + 1) * 10 * 60_000L
-        while (markerMs <= lastMs) {
-            val isLong = (markerMs / (10 * 60_000L)) % 3 == 0L
-            val x = markerMs * widthPerMs
-
+        
+        // Calculate the first marker (rightmost), which is the first 10min interval left after current position
+        var markerMs = ((lastMs - currentPosMs) / (10 * 60_000L)) * 10 * 60_000L
+        while (markerMs > 0) {
+            val isLong = ((markerMs / (10 * 60_000L)) % 3 == 0L)
+            val x = widthPx - (markerMs * widthPerMs)  // right to left
+            
             linePaint.strokeWidth = if (isLong) longLineWidth else baseLineWidth
             val lineHeight = if (isLong) longLineHeight else baseLineHeight
-
+            
             canvas.drawLine(
                 x, 0f, x, lineHeight, linePaint
             )
-            markerMs += 10 * 60_000L
+            markerMs -= 10 * 60_000L
         }
     }
 }
