@@ -461,6 +461,11 @@ class PlayerActivity : AppCompatActivity() {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         isPipActive = isInPictureInPictureMode
         if (isInPictureInPictureMode) {
+            
+            // Hide finish time and remaining time in PiP mode
+            finishTimeText.visibility = View.GONE
+            remainingTimeText.visibility = View.GONE
+            
             binding.playerView.subtitleView?.setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION)
             playerUnlockControls.visibility = View.INVISIBLE
             pipBroadcastReceiver = object : BroadcastReceiver() {
@@ -481,6 +486,13 @@ class PlayerActivity : AppCompatActivity() {
                 registerReceiver(pipBroadcastReceiver, IntentFilter(PIP_INTENT_ACTION))
             }
         } else {
+            
+            // Restore finish/remaining time based on current logic
+            updateFinishTimeText()
+            mediaController?.let {
+                updateRemainingTimeText(it.currentPosition, it.duration)
+            }
+            
             binding.playerView.subtitleView?.setFixedTextSize(TypedValue.COMPLEX_UNIT_SP, playerPreferences.subtitleTextSize.toFloat())
             if (!isControlsLocked) {
                 playerUnlockControls.visibility = View.VISIBLE
