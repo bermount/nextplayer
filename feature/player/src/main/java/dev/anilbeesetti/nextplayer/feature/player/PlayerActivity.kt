@@ -276,7 +276,7 @@ class PlayerActivity : AppCompatActivity() {
 
         //Remaining Time Text
         val screenWidth = resources.displayMetrics.widthPixels
-        val scaledTextSizePx = screenWidth / 25f // Adjust divisor for your preferred size
+        val scaledTextSizePx = screenWidth / 42f // Adjust divisor for your preferred size
         val scaledTextSizeSp = scaledTextSizePx / resources.displayMetrics.scaledDensity
         remainingTimeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledTextSizeSp)
         
@@ -1263,7 +1263,7 @@ class PlayerActivity : AppCompatActivity() {
         if (duration > 0 && position <= duration) {
             val remainingMs = duration - position
             val remainingMin = ((remainingMs + 59_999) / 60_000).toInt() // round up to minutes
-            val text = if (remainingMin > 0) "$remainingMin min" else "<1 min"
+            val text = if (remainingMin > 0) "${remainingMin}m" else "<1m"
             remainingTimeText.text = text
             remainingTimeText.visibility = View.VISIBLE
         } else {
