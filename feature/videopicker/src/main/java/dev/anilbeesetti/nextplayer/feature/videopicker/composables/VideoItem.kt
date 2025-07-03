@@ -33,6 +33,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.min
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -98,7 +99,7 @@ private fun VideoListItem(
         headlineContent = {
             Text(
                 text = if (preferences.showExtensionField) video.nameWithExtension else video.displayName,
-                maxLines = 2,
+                maxLines = 3,
                 style = MaterialTheme.typography.titleMedium,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -107,10 +108,10 @@ private fun VideoListItem(
             if (preferences.showPathField) {
                 Text(
                     text = video.path.substringBeforeLast("/"),
-                    maxLines = 2,
-                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 1,
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 8.sp),
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(vertical = 2.dp),
+                    modifier = Modifier.padding(vertical = 0.dp),
                 )
             }
             FlowRow(

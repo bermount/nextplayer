@@ -23,6 +23,15 @@ interface MediumDao {
     @Query("SELECT * FROM media WHERE uri = :uri")
     suspend fun get(uri: String): MediumEntity?
 
+    @Query("SELECT * FROM media WHERE filename = :filename")
+    suspend fun getByFilename(filename: String): MediumEntity?
+    
+    @Query("UPDATE media SET playback_position = :position, position_last_updated = :timestamp WHERE uri = :uri")
+    suspend fun updatePositionAndTimestamp(uri: String, position: Long, timestamp: Long)
+    
+    @Query("UPDATE media SET playback_position = :position, position_last_updated = :timestamp WHERE filename = :filename")
+    suspend fun updatePositionAndTimestampByFilename(filename: String, position: Long, timestamp: Long)
+    
     @Query("SELECT * FROM media WHERE uri = :uri")
     fun getAsFlow(uri: String): Flow<MediumEntity?>
 
