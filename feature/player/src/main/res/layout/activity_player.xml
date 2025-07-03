@@ -175,9 +175,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="3dp"
         android:text="0:00"
-        android:textColor="#FAFAFA"
+        android:textColor="#CCFAFAFA"
         android:visibility="gone"
         tools:text="12:17"
         />
