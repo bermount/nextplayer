@@ -12,7 +12,7 @@ class PlayerRulerView @JvmOverloads constructor(
 ) : View(context, attrs, defStyle) {
 
     private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xFF550000.toInt() // Red color, customize as needed
+        color = 0xFFAA2222.toInt() // Red color, customize as needed
         strokeCap = Paint.Cap.ROUND
     }
 
@@ -29,7 +29,7 @@ class PlayerRulerView @JvmOverloads constructor(
         val widthPx = width.toFloat()
         val widthPerMs = widthPx / durationMs
         
-        val baseLineHeight = thinBarHeightPx
+        val baseLineHeight = thinBarHeightPx + 1f
         val longLineHeight = baseLineHeight * 1.5f
         
         val baseLineWidth = TypedValue.applyDimension(
