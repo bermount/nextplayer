@@ -450,8 +450,18 @@ class PlayerActivity : AppCompatActivity() {
                     when (intent.getIntExtra(PIP_INTENT_ACTION_CODE, 0)) {
                         PIP_ACTION_PLAY -> mediaController?.play()
                         PIP_ACTION_PAUSE -> mediaController?.pause()
-                        PIP_ACTION_NEXT -> mediaController?.seekToNext()
-                        PIP_ACTION_PREVIOUS -> mediaController?.seekToPrevious()
+                        PIP_ACTION_SEEK_FORWARD -> {
+                            mediaController?.let {
+                                val seekPosition = (it.currentPosition + 10_000).coerceAtMost(it.duration)
+                                it.seekTo(seekPosition)
+                            }
+                        }
+                        PIP_ACTION_SEEK_BACKWARD -> {
+                            mediaController?.let {
+                                val seekPosition = (it.currentPosition - 10_000).coerceAtLeast(0)
+                                it.seekTo(seekPosition)
+                            }
+                        }
                     }
                     updatePictureInPictureParams()
                 }
@@ -493,9 +503,9 @@ class PlayerActivity : AppCompatActivity() {
                 listOf(
                     createPipAction(
                         context = this@PlayerActivity,
-                        title = "skip to previous",
-                        icon = coreUiR.drawable.ic_skip_prev,
-                        actionCode = PIP_ACTION_PREVIOUS,
+                        title = "Seek Backward",
+                        icon = coreUiR.drawable.ic_replay_10,
+                        actionCode = PIP_ACTION_SEEK_BACKWARD,
                     ),
                     if (mediaController?.isPlaying == true) {
                         createPipAction(
@@ -514,9 +524,9 @@ class PlayerActivity : AppCompatActivity() {
                     },
                     createPipAction(
                         context = this@PlayerActivity,
-                        title = "skip to next",
-                        icon = coreUiR.drawable.ic_skip_next,
-                        actionCode = PIP_ACTION_NEXT,
+                        title = "Seek Forward",
+                        icon = coreUiR.drawable.ic_forward_10,
+                        actionCode = PIP_ACTION_SEEK_FORWARD,
                     ),
                 ),
             )
@@ -1252,8 +1262,8 @@ class PlayerActivity : AppCompatActivity() {
         const val PIP_INTENT_ACTION_CODE = "pip_action_code"
         const val PIP_ACTION_PLAY = 1
         const val PIP_ACTION_PAUSE = 2
-        const val PIP_ACTION_NEXT = 3
-        const val PIP_ACTION_PREVIOUS = 4
+        const val PIP_ACTION_SEEK_FORWARD = 3
+        const val PIP_ACTION_SEEK_BACKWARD = 4
     }
 }
 
