@@ -85,6 +85,9 @@ class PlayerService : MediaSessionService() {
 
     private var shouldSkipNextPositionSave = false
 
+    private var periodicSaveJob: Job? = null
+    private val SAVE_INTERVAL_MS = 5 * 60 * 1000L // 5 minutes
+
     private val playbackStateListener = object : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             super.onMediaItemTransition(mediaItem, reason)
@@ -429,6 +432,12 @@ class PlayerService : MediaSessionService() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+        periodicSaveJob = serviceScope.launch {
+            while (isActive) {
+                delay(SAVE_INTERVAL_MS)
+                saveCurrentPlaybackPosition()
+            }
+        }
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
@@ -441,6 +450,7 @@ class PlayerService : MediaSessionService() {
     override fun onDestroy() {
         super.onDestroy()
         serviceScope.cancel()
+        periodicSaveJob?.cancel()
         subtitleCacheDir.deleteFiles()
         mediaSession?.run {
             player.clearMediaItems()
@@ -452,6 +462,20 @@ class PlayerService : MediaSessionService() {
         }
     }
 
+    private fun saveCurrentPlaybackPosition() {
+        val player = mediaSession?.player ?: return
+        val currentMediaItem = player.currentMediaItem ?: return
+        val mediaUri = currentMediaItem.mediaId.toUri()
+        val filename = getFilenameFromUri(mediaUri) ?: currentMediaItem.mediaId
+        val currentPosition = player.currentPosition
+        
+        mediaRepository.updateMediumPosition(
+            uri = mediaUri.toString(),
+            filename = filename,
+            position = currentPosition,
+        )
+    }
+    
     private suspend fun updatedMediaItemsWithMetadata(
         mediaItems: List<MediaItem>,
     ): List<MediaItem> = supervisorScope {
