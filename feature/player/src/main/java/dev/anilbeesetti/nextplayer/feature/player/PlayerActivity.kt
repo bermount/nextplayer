@@ -100,6 +100,9 @@ import dev.anilbeesetti.nextplayer.feature.player.utils.PlayerApi
 import dev.anilbeesetti.nextplayer.feature.player.utils.PlayerGestureHelper
 import dev.anilbeesetti.nextplayer.feature.player.utils.VolumeManager
 import dev.anilbeesetti.nextplayer.feature.player.utils.toMillis
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -261,9 +264,6 @@ class PlayerActivity : AppCompatActivity() {
         extraControls = binding.playerView.findViewById(R.id.extra_controls)
 
         thinProgress = binding.thinProgress
-        finishTimeText = findViewById(R.id.finish_time_text)
-        finishTimeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledTextSizeSp)
-        remainingTimeText = findViewById(R.id.remaining_time_text)
         
         // Adjust progress bar thickness based on screen density
         val density = resources.displayMetrics.density
@@ -283,6 +283,9 @@ class PlayerActivity : AppCompatActivity() {
         val scaledTextSizePx = screenWidth / 42f // Adjust divisor for your preferred size
         val scaledTextSizeSp = scaledTextSizePx / resources.displayMetrics.scaledDensity
         remainingTimeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledTextSizeSp)
+        finishTimeText = findViewById(R.id.finish_time_text)
+        finishTimeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledTextSizeSp)
+        remainingTimeText = findViewById(R.id.remaining_time_text)
         
         
         if (playerPreferences.controlButtonsPosition == ControlButtonsPosition.RIGHT) {
