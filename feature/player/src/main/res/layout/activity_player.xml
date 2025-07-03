@@ -181,7 +181,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            android:layout_marginEnd="3dp"
+            android:layout_marginEnd="4dp"
             android:text="14:32 (12m)"
             android:textColor="#CCFAFAFA"
             android:visibility="gone" />
@@ -191,7 +191,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="1dp"
-            android:layout_marginEnd="3dp"
+            android:layout_marginEnd="5dp"
+            android:layout_gravity="end"
             android:text="0:00"
             android:textColor="#CCFAFAFA"
             android:visibility="gone"
