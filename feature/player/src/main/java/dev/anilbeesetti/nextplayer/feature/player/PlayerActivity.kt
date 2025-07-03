@@ -143,6 +143,8 @@ class PlayerActivity : AppCompatActivity() {
     private val shouldFastSeek: Boolean
         get() = playerPreferences.shouldFastSeek(mediaController?.duration ?: C.TIME_UNSET)
 
+    private lateinit var remainingTimeText: TextView
+
     /**
      * Player
      */
@@ -257,6 +259,7 @@ class PlayerActivity : AppCompatActivity() {
         extraControls = binding.playerView.findViewById(R.id.extra_controls)
 
         thinProgress = binding.thinProgress
+        remainingTimeText = findViewById(R.id.remaining_time_text)
 
         // Adjust progress bar thickness based on screen density
         val density = resources.displayMetrics.density
@@ -271,6 +274,13 @@ class PlayerActivity : AppCompatActivity() {
             resources.displayMetrics
         ).toInt()
 
+        //Remaining Time Text
+        val screenWidth = resources.displayMetrics.widthPixels
+        val scaledTextSizePx = screenWidth / 25f // Adjust divisor for your preferred size
+        val scaledTextSizeSp = scaledTextSizePx / resources.displayMetrics.scaledDensity
+        remainingTimeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledTextSizeSp)
+        
+        
         if (playerPreferences.controlButtonsPosition == ControlButtonsPosition.RIGHT) {
             extraControls.gravity = Gravity.END
         }
@@ -1217,6 +1227,7 @@ class PlayerActivity : AppCompatActivity() {
                             val params = thinProgress.layoutParams
                             params.width = progressWidth
                             thinProgress.layoutParams = params
+                            updateRemainingTimeText(currentPosition, duration)
                         }
                     }
                 }
@@ -1240,12 +1251,26 @@ class PlayerActivity : AppCompatActivity() {
             val params = thinProgress.layoutParams
             params.width = progressWidth
             thinProgress.layoutParams = params
+            updateRemainingTimeText(currentPosition, duration)
             thinProgress.visibility = View.VISIBLE
         } else {
             thinProgress.visibility = View.GONE
         }
     }
 
+    // Update Remaining Time Text
+    private fun updateRemainingTimeText(position: Long, duration: Long) {
+        if (duration > 0 && position <= duration) {
+            val remainingMs = duration - position
+            val remainingMin = ((remainingMs + 59_999) / 60_000).toInt() // round up to minutes
+            val text = if (remainingMin > 0) "$remainingMin min" else "<1 min"
+            remainingTimeText.text = text
+            remainingTimeText.visibility = View.VISIBLE
+        } else {
+            remainingTimeText.visibility = View.GONE
+        }
+    }
+    
     companion object {
         const val HIDE_DELAY_MILLIS = 1000L
         const val PIP_INTENT_ACTION = "pip_action"
