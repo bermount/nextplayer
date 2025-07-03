@@ -133,7 +133,7 @@ class PlayerActivity : AppCompatActivity() {
     
     private lateinit var thinProgress: View
     private var progressUpdateJob: Job? = null
-
+    private lateinit var playerRulerView: PlayerRulerView
 
     private var playInBackground: Boolean = false
     private var isIntentNew: Boolean = true
