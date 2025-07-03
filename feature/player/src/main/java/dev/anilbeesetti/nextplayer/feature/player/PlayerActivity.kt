@@ -1251,7 +1251,7 @@ class PlayerActivity : AppCompatActivity() {
             val params = thinProgress.layoutParams
             params.width = progressWidth
             thinProgress.layoutParams = params
-            updateRemainingTimeText(currentPosition, duration)
+            updateRemainingTimeText(position, duration)
             thinProgress.visibility = View.VISIBLE
         } else {
             thinProgress.visibility = View.GONE
