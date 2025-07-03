@@ -270,7 +270,7 @@ class PlayerActivity : AppCompatActivity() {
         val heightInDp = when {
             density <= 2.0f -> 2f
 //            density <= 1.5f -> 2f // For medium-resolution screens (hdpi)
-            else -> 1f
+            else -> 1.2f
         }
         thinProgress.layoutParams.height = TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP,
@@ -283,7 +283,7 @@ class PlayerActivity : AppCompatActivity() {
         remainingTimeText = findViewById(R.id.remaining_time_text)
         
         val screenWidth = resources.displayMetrics.widthPixels
-        val scaledTextSizePx = screenWidth / 48f // Adjust divisor for your preferred size
+        val scaledTextSizePx = screenWidth / 50f // Adjust divisor for your preferred size
         val scaledTextSizeSp = scaledTextSizePx / resources.displayMetrics.scaledDensity
         
         finishTimeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledTextSizeSp)
