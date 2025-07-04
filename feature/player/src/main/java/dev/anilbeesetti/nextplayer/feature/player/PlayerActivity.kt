@@ -409,9 +409,7 @@ class PlayerActivity : AppCompatActivity() {
         //Convert screen width to centimeters
         val screenWidthInches = displayMetrics.widthPixels / displayMetrics.xdpi
         val screenWidthCm = screenWidthInches * 2.54f
-        
-        val scaledTextSizePx: Float
-        
+                
         // Convert the target size from centimeters to millimeters for TypedValue
         val scaledTextSizeMm = screenWidthCm * 10f
         if (scaledTextSizeMm < 200f) {
