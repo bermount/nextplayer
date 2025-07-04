@@ -114,6 +114,18 @@ fun PlayerPreferencesScreen(
                 playbackSpeed = preferences.longPressControlsSpeed,
                 onClick = { viewModel.showDialog(PlayerPreferenceDialog.LongPressControlsSpeedDialog) },
             )
+            ThinProgressBarSetting(
+                isChecked = preferences.showThinProgressBar,
+                onClick = viewModel::toggleShowThinProgressBar,
+            )
+            FinishTimeSetting(
+                isChecked = preferences.showFinishTime,
+                onClick = viewModel::toggleShowFinishTime,
+            )
+            RemainingTimeSetting(
+                isChecked = preferences.showRemainingTime,
+                onClick = viewModel::toggleShowRemainingTime,
+            )
             SeekIncrementPreference(
                 currentValue = preferences.seekIncrement,
                 onClick = { viewModel.showDialog(PlayerPreferenceDialog.SeekIncrementDialog) },
@@ -626,6 +638,46 @@ fun ControlButtonsPositionSetting(
         title = stringResource(id = R.string.control_buttons_alignment),
         description = currentControlButtonPosition.name(),
         icon = NextIcons.ButtonsPosition,
+        onClick = onClick,
+    )
+}
+
+@Composable
+fun ThinProgressBarSetting(
+    isChecked: Boolean,
+    onClick: () -> Unit,
+) {
+    PreferenceSwitch(
+        title = "Thin progress bar",
+        description = "Show a thin progress bar at the top of the screen",
+        isChecked = isChecked,
+        onClick = onClick,
+    )
+}
+
+@Composable
+fun FinishTimeSetting(
+    isChecked: Boolean,
+    onClick: () -> Unit,
+) {
+    PreferenceSwitch(
+        title = "Finish time",
+        description = "Show the estimated finish time",
+        isChecked = isChecked,
+        onClick = onClick,
+    )
+}
+
+@Composable
+fun RemainingTimeSetting(
+    isChecked: Boolean,
+    onClick: () -> Unit,
+) {
+    PreferenceSwitch(
+        title = "Remaining time",
+        description = "Show the remaining time in minutes",
+        icon = NextIcons.Timer,
+        isChecked = isChecked,
         onClick = onClick,
     )
 }
