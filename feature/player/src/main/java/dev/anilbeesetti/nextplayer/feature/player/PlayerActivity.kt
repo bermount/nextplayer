@@ -27,8 +27,6 @@ import android.os.Process
 import android.util.Rational
 import android.util.TypedValue
 import android.util.DisplayMetrics
-import android.util.TypedValue
-import android.view.WindowManager
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
