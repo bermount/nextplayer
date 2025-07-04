@@ -1490,11 +1490,11 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         val finishTimeStr = SimpleDateFormat("HH:mm", Locale.getDefault())
             .format(Date(finishMillis))
             
-        // Time left until finish time (round up to the next minute)
-        val msLeft = finishMillis - System.currentTimeMillis()
-        val minLeft = if (msLeft > 0) ((msLeft + 59_999) / 60_000).toInt() else 0
-        
-        val showText = if (minLeft > 0) "$finishTimeStr (${minLeft}m)" else "$finishTimeStr (<1m)"
+        // Time difference from finish time (round up to the next minute)
+        val msDiff = System.currentTimeMillis() - finishMillis
+        val minutes = (msDiff + if (msDiff >= 0) 30_000 else -30_000) / 60_000
+
+        val showText = "$finishTimeStr (${if (minutes >= 0) "+" else ""}${minutes}m)"
         finishTimeText.text = showText
         finishTimeText.visibility = View.VISIBLE
     }
