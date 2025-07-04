@@ -35,28 +35,46 @@ class JsonPlaybackSyncManager @Inject constructor(
     private val json: Json,
 ) {
 
+    private val prefs by lazy {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    }
+
+    companion object {
+        private const val PREFS_NAME = "playback_sync_prefs"
+        private const val KEY_LAST_SYNC_TIME = "last_sync_time"
+    }
+
     private val mutex = Mutex()
     
     suspend fun readPlaybackPositions(syncDirectoryUri: String): List<PlaybackPosition> = mutex.withLock {
         withContext(Dispatchers.IO) {
             if (syncDirectoryUri.isBlank()) return@withContext emptyList()
             try {
+                val syncStartTime = System.currentTimeMillis()
+                val lastSyncTime = prefs.getLong(KEY_LAST_SYNC_TIME, 0L)
+                 
                 val dir = DocumentFile.fromTreeUri(context, syncDirectoryUri.toUri())
                 val playbackDir = dir?.findFile("playback_positions")
                 if (playbackDir == null || !playbackDir.isDirectory) return@withContext emptyList()
-                
-                playbackDir.listFiles().mapNotNull { file ->
-                    try {
-                        context.contentResolver.openInputStream(file.uri)?.use { inputStream ->
-                            BufferedReader(InputStreamReader(inputStream)).use { reader ->
-                                val content = reader.readText()
-                                if (content.isNotBlank()) json.decodeFromString<PlaybackPosition>(content) else null
+
+                val positions = playbackDir.listFiles().mapNotNull { file ->
+                    if (file.lastModified() > lastSyncTime) {
+                        try {
+                            context.contentResolver.openInputStream(file.uri)?.use { inputStream ->
+                                BufferedReader(InputStreamReader(inputStream)).use { reader ->
+                                    val content = reader.readText()
+                                    if (content.isNotBlank()) json.decodeFromString<PlaybackPosition>(content) else null
+                                }
                             }
+                        } catch (e: Exception) {
+                        null
                         }
-                    } catch (e: Exception) {
+                    } else {
                         null
                     }
                 }
+                prefs.edit().putLong(KEY_LAST_SYNC_TIME, syncStartTime).apply()
+                positions
             } catch (e: Exception) {
                 emptyList()
             }
