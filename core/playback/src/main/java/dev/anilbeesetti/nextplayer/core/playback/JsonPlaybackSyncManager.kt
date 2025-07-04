@@ -66,8 +66,10 @@ class JsonPlaybackSyncManager @Inject constructor(
                                     if (content.isNotBlank()) json.decodeFromString<PlaybackPosition>(content) else null
                                 }
                             }
+                        } catch (e: Exception) {
+                        null
                         }
-                    } catch (e: Exception) {
+                    } else {
                         null
                     }
                 }
