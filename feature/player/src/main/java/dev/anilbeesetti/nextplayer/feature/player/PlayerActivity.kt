@@ -26,6 +26,9 @@ import android.os.Bundle
 import android.os.Process
 import android.util.Rational
 import android.util.TypedValue
+import android.util.DisplayMetrics
+import android.util.TypedValue
+import android.view.WindowManager
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
@@ -397,12 +400,20 @@ class PlayerActivity : AppCompatActivity() {
             subtitleFileLauncherLaunchedForMediaItem = null
         }
         initializePlayerView()
+        
         //Remaining Time Text
         finishTimeText = findViewById(R.id.finish_time_text)
         remainingTimeText = findViewById(R.id.remaining_time_text)
-        
-        val screenWidth = resources.displayMetrics.widthPixels
-        val scaledTextSizePx = screenWidth / 50f // Adjust divisor for your preferred size
+
+        val displayMetrics = DisplayMetrics()
+        (context?.getSystemService(Context.WINDOW_SERVICE) as? WindowManager)?.defaultDisplay?.getMetrics(displayMetrics)
+
+        //Convert screen width to centimeters
+        val screenWidthInches = displayMetrics.widthPixels / displayMetrics.xdpi
+        val screenWidthCm = screenWidthInches * 2.54f
+
+        val scaledTextSizeCm = screenWidthCm * 0.06f
+        val scaledTextSizePx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_CM, scaledTextSizeCm, displayMetrics)
         val scaledTextSizeSp = scaledTextSizePx / resources.displayMetrics.scaledDensity
         
         finishTimeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledTextSizeSp)
