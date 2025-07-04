@@ -150,7 +150,7 @@ class PlayerGestureHelper(
 
                 totalScrollX += -distanceX
                 val distanceDp = Utils.pxToDp(totalScrollX)
-                val step = (distanceDp / 4).coerceIn(-100f, 100f)
+                val step = distanceDp / 4
                 seekChange = (step * SEEK_STEP_MS).toLong()
 
                 playerView.player?.run {
