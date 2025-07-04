@@ -74,6 +74,30 @@ class PlayerPreferencesViewModel @Inject constructor(
         }
     }
 
+    fun toggleShowThinProgressBar() {
+        viewModelScope.launch {
+            preferencesRepository.updatePlayerPreferences {
+                it.copy(showThinProgressBar = !it.showThinProgressBar)
+            }
+        }
+    }
+    
+    fun toggleShowFinishTime() {
+        viewModelScope.launch {
+            preferencesRepository.updatePlayerPreferences {
+                it.copy(showFinishTime = !it.showFinishTime)
+            }
+        }
+    }
+    
+    fun toggleShowRemainingTime() {
+        viewModelScope.launch {
+            preferencesRepository.updatePlayerPreferences {
+                it.copy(showRemainingTime = !it.showRemainingTime)
+            }
+        }
+    }
+    
     fun toggleDoubleTapGesture() {
         viewModelScope.launch {
             preferencesRepository.updatePlayerPreferences {

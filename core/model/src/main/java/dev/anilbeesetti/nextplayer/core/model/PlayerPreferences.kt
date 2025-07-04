@@ -23,6 +23,11 @@ data class PlayerPreferences(
     val loopMode: LoopMode = LoopMode.OFF,
     val skipSilenceEnabled: Boolean = true,
 
+    // UI Visibility
+    val showThinProgressBar: Boolean = true,
+    val showFinishTime: Boolean = true,
+    val showRemainingTime: Boolean = true,
+    
     // Controls (Gestures)
     val useSwipeControls: Boolean = false,
     val useSeekControls: Boolean = true,
