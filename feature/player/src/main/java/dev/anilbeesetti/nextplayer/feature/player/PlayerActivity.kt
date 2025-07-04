@@ -412,7 +412,7 @@ class PlayerActivity : AppCompatActivity() {
         
         // Convert the target size from centimeters to millimeters for TypedValue
         val scaledTextSizeMm = screenWidthCm * 10f
-        val scaledTextSizePx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.006f
+        val scaledTextSizePx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.01f
         val scaledTextSizeSp = scaledTextSizePx / resources.displayMetrics.scaledDensity
         
         finishTimeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledTextSizeSp)
