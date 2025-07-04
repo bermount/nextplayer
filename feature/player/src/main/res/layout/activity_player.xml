@@ -186,6 +186,7 @@
             android:layout_marginEnd="4dp"
             android:text="14:32 (12m)"
             android:textColor="#99FAFAFA"
+            android:background="#1AE0E0E0"
             android:visibility="gone" />
         
         <TextView
@@ -197,6 +198,7 @@
             android:layout_gravity="end"
             android:text="0:00"
             android:textColor="#99FAFAFA"
+            android:background="#1AE0E0E0"
             android:visibility="gone"
             tools:text="12:17" />
     </LinearLayout>
