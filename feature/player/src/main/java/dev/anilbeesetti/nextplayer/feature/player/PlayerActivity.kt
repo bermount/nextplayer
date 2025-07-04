@@ -508,9 +508,13 @@ class PlayerActivity : AppCompatActivity() {
         } else {
             
             // Restore finish/remaining time based on current logic
-            updateFinishTimeText()
-            mediaController?.let {
-                updateRemainingTimeText(it.currentPosition, it.duration)
+            if (playerPreferences.showFinishTime) {
+                updateFinishTimeText()
+            }
+            if (playerPreferences.showRemainingTime) {
+                mediaController?.let {
+                    updateRemainingTimeText(it.currentPosition, it.duration)
+                }
             }
             
             binding.playerView.subtitleView?.setFixedTextSize(TypedValue.COMPLEX_UNIT_SP, playerPreferences.subtitleTextSize.toFloat())
@@ -921,8 +925,10 @@ class PlayerActivity : AppCompatActivity() {
                     isPlaybackFinished = true
                     stopProgressUpdater()
                     // Set progress to full width on completion
-                    thinProgress.layoutParams.width = resources.displayMetrics.widthPixels
-                    thinProgress.requestLayout()
+                    if (playerPreferences.showThinProgressBar) {
+                        thinProgress.layoutParams.width = resources.displayMetrics.widthPixels
+                        thinProgress.requestLayout()
+                    }
                     finishTimeMillis = null
                     finish()
                 }
@@ -1427,10 +1433,14 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
 
                         // Update the UI on the main thread
                         withContext(Dispatchers.Main) {
-                            thinProgress.visibility = View.VISIBLE
-                            val params = thinProgress.layoutParams
-                            params.width = progressWidth
-                            thinProgress.layoutParams = params
+                            if (playerPreferences.showThinProgressBar) {
+                                thinProgress.visibility = View.VISIBLE
+                                val params = thinProgress.layoutParams
+                                params.width = progressWidth
+                                thinProgress.layoutParams = params
+                            } else {
+                                thinProgress.visibility = View.GONE
+                            }
                             updateRemainingTimeText(currentPosition, duration)
                         }
                     }
@@ -1456,7 +1466,9 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
             params.width = progressWidth
             thinProgress.layoutParams = params
             updateRemainingTimeText(position, duration)
-            thinProgress.visibility = View.VISIBLE
+            if (playerPreferences.showThinProgressBar) {
+                thinProgress.visibility = View.VISIBLE
+            }
         } else {
             thinProgress.visibility = View.GONE
         }
@@ -1470,7 +1482,9 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
             val remainingMin = ((remainingMs + 59_999) / 60_000).toInt()
             val now = System.currentTimeMillis()
             finishTimeMillis = now + remainingMin * 60_000L
-            finishTimeText.visibility = View.VISIBLE
+            if (playerPreferences.showFinishTime) {
+                finishTimeText.visibility = View.VISIBLE
+            }
             // Immediately update the text at start
             updateFinishTimeText()
         } else {
@@ -1480,7 +1494,7 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
 
     //Update Video Finish Time Text
     private fun updateFinishTimeText() {
-        if (isPipActive) {
+        if (isPipActive || !playerPreferences.showFinishTime) {
             finishTimeText.visibility = View.GONE
             return
         }
@@ -1501,7 +1515,7 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
     
     // Update Remaining Time Text
     private fun updateRemainingTimeText(position: Long, duration: Long) {
-        if (isPipActive) {
+        if (isPipActive || !playerPreferences.showRemainingTime) {
             remainingTimeText.visibility = View.GONE
             return
         }
