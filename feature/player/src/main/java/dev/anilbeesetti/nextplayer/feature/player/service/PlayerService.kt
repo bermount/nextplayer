@@ -86,8 +86,6 @@ class PlayerService : MediaSessionService() {
     private var isMediaItemReady = false
     private var currentVideoState: VideoState? = null
 
-    private var shouldSkipNextPositionSave = false
-
     private var periodicSaveJob: Job? = null
     private val SAVE_INTERVAL_MS = 5 * 60 * 1000L // 5 minutes
 
@@ -95,11 +93,6 @@ class PlayerService : MediaSessionService() {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             super.onMediaItemTransition(mediaItem, reason)
             if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT) return
-            if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO && !playerPreferences.autoplay) {
-                shouldSkipNextPositionSave = true
-                mediaSession?.player?.stop()
-                return
-            }
             isMediaItemReady = false
             if (mediaItem != null) {
                 serviceScope.launch {
@@ -159,18 +152,14 @@ class PlayerService : MediaSessionService() {
                 }
 
                 DISCONTINUITY_REASON_REMOVE -> {
-                    if (!shouldSkipNextPositionSave) {
-                        val filename = this@PlayerService.getFilenameFromUri(oldMediaItem.mediaId.toUri())
-                        mediaRepository.updateMediumPosition(
-                            uri = oldMediaItem.mediaId,
-                            position = oldPosition.positionMs,
-                        )
-                    }
+                  val filename = this@PlayerService.getFilenameFromUri(oldMediaItem.mediaId.toUri())
+                  mediaRepository.updateMediumPosition(
+                    uri = oldMediaItem.mediaId,
+                    position = oldPosition.positionMs,
+                  )
                 }
-
                 else -> return
             }
-            shouldSkipNextPositionSave = false
         }
 
         override fun onTracksChanged(tracks: Tracks) {
@@ -209,6 +198,14 @@ class PlayerService : MediaSessionService() {
                         )
                     }
                 }
+            }
+        }
+
+        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+            super.onPlayWhenReadyChanged(playWhenReady, reason)
+
+            if (reason == Player.PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM) {
+                mediaSession?.player?.stop()
             }
         }
     }
@@ -403,6 +400,7 @@ class PlayerService : MediaSessionService() {
             .build()
             .also {
                 it.addListener(playbackStateListener)
+                it.pauseAtEndOfMediaItems = !playerPreferences.autoplay
                 it.skipSilenceEnabled = playerPreferences.skipSilenceEnabled
             }
 
