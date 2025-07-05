@@ -1533,7 +1533,7 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         if (duration > 0 && position <= duration) {
             val remainingMs = duration - position
             val remainingMin = ((remainingMs + 59_999) / 60_000).toInt() // round up to minutes
-            val text = if (remainingMin > 0) "${remainingMin}m" else "<1m"
+            val text = if (remainingMin > 1) "${remainingMin}m" else "<1m"
             remainingTimeText.text = text
             remainingTimeText.visibility = View.VISIBLE
         } else {
