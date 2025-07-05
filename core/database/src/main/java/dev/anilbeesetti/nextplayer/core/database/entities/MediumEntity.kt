@@ -25,6 +25,7 @@ data class MediumEntity(
     @ColumnInfo(name = "height") val height: Int,
     @ColumnInfo(name = "duration") val duration: Long,
     @ColumnInfo(name = "media_store_id") val mediaStoreId: Long,
+    @ColumnInfo(name = "content_hash", index = true) val contentHash: String?,
 
     // Medium info
     @ColumnInfo(name = "format") val format: String? = null,
@@ -38,4 +39,5 @@ data class MediumEntity(
     @ColumnInfo(name = "last_played_time") val lastPlayedTime: Long? = null,
     @ColumnInfo(name = "external_subs") val externalSubs: String = "",
     @ColumnInfo(name = "video_scale") val videoScale: Float = 1f,
+    @ColumnInfo(name = "position_last_updated") val positionLastUpdated: Long? = null,
 )

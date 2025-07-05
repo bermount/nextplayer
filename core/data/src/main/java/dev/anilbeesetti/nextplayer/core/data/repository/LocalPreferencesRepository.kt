@@ -28,4 +28,9 @@ class LocalPreferencesRepository @Inject constructor(
     ) {
         playerPreferencesDataSource.update(transform)
     }
+    override suspend fun setSyncPlaybackPositionsFolderUri(uri: String) {
+        playerPreferencesDataSource.update { preferences ->
+            preferences.copy(syncPlaybackPositionsFolderUri = uri)
+        }
+    }
 }
