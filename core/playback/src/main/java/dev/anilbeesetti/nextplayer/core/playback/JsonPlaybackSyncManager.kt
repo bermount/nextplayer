@@ -94,8 +94,7 @@ class JsonPlaybackSyncManager @Inject constructor(
                 }
                 if (playbackDir == null) return@withContext
                 
-                // Use filename as the file name
-                // Use a SHA-256 hash of the filename as the file name
+                // Use hash as the file name
                 val safeFilename = playbackPosition.identifier
                 val fileName = "$safeFilename.json"
                 
