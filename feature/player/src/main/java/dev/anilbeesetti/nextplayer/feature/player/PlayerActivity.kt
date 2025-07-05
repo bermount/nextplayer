@@ -412,10 +412,16 @@ class PlayerActivity : AppCompatActivity() {
                 
         // Convert the target size from centimeters to millimeters for TypedValue
         val scaledTextSizeMm = screenWidthCm * 10f
-        val scaledTextSizePx = if (scaledTextSizeMm < 200f) {
+        val scaledTextSizePx = if (scaledTextSizeMm < 155f) {
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.025f
+        } else if (scaledTextSizeMm < 200f) {
             TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.023f
+        } else if (scaledTextSizeMm < 300f) {
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.009f
+        } else if (scaledTextSizeMm < 450f) {
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.008f
         } else {
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.01f
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.006f
         }
         val scaledTextSizeSp = scaledTextSizePx / resources.displayMetrics.scaledDensity
         
