@@ -25,6 +25,7 @@ data class MediumEntity(
     @ColumnInfo(name = "height") val height: Int,
     @ColumnInfo(name = "duration") val duration: Long,
     @ColumnInfo(name = "media_store_id") val mediaStoreId: Long,
+    @ColumnInfo(name = "content_hash", index = true) val contentHash: String?,
 
     // Medium info
     @ColumnInfo(name = "format") val format: String? = null,
