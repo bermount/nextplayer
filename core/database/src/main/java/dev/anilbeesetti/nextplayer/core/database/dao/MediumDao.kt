@@ -32,12 +32,7 @@ interface MediumDao {
     @Query("UPDATE media SET playback_position = :position, position_last_updated = :timestamp WHERE filename = :filename")
     suspend fun updatePositionAndTimestampByFilename(filename: String, position: Long, timestamp: Long)
 
-    @Query(
-        "UPDATE media SET " +
-            "playback_position = :position, " +
-            "position_last_updated = :timestamp " +
-            "WHERE content_hash = :hash AND position_last_updated < :timestamp",
-    )
+    @Query("UPDATE media SET playback_position = :position, position_last_updated = :timestamp WHERE content_hash = :hash")
     suspend fun updatePositionAndTimestampByHash(hash: String, position: Long, timestamp: Long)
     
     @Query("SELECT * FROM media WHERE uri = :uri")
