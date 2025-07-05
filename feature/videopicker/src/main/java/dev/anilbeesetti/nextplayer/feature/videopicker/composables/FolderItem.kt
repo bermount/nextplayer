@@ -98,7 +98,7 @@ private fun FolderListItem(
                             .padding(5.dp)
                             .padding(bottom = 3.dp)
                             .align(Alignment.BottomEnd),
-                        backgroundColor = Color.Black.copy(alpha = 0.1f),
+                        backgroundColor = Color.Black.copy(alpha = 0.2f),
                         contentColor = Color.White,
                         shape = MaterialTheme.shapes.extraSmall,
                     )
@@ -180,7 +180,7 @@ private fun FolderGridItem(
                         .padding(5.dp)
                         .padding(bottom = 3.dp)
                         .align(Alignment.BottomEnd),
-                    backgroundColor = Color.Black.copy(alpha = 0.1f),
+                    backgroundColor = Color.Black.copy(alpha = 0.2f),
                     contentColor = Color.White,
                     shape = MaterialTheme.shapes.extraSmall,
                 )
