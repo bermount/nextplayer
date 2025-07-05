@@ -111,10 +111,16 @@ class LocalMediaSynchronizer @Inject constructor(
     }
 
     private suspend fun updateMedia(media: List<MediaVideo>) = withContext(Dispatchers.Default) {
-        val mediumEntities = media.map {
+        val mediumEntities = mutableListOf<MediumEntity>()
+        
+        // Loop through each video found by the MediaStore scan
+        for (it in media) {
             val file = File(it.data)
-            val mediumEntity = mediumDao.get(it.uri.toString())
-            mediumEntity?.copy(
+            val existingMedium = mediumDao.get(it.uri.toString())
+            
+            val fileIdentifier = FileHashGenerator.generateFileIdentifier(context, it.uri)
+            
+            val entity = existingMedium?.copy(
                 path = file.path,
                 name = file.name,
                 size = it.size,
@@ -124,6 +130,7 @@ class LocalMediaSynchronizer @Inject constructor(
                 mediaStoreId = it.id,
                 modified = it.dateModified,
                 parentPath = file.parent!!,
+                contentHash = fileIdentifier // Update the hash on existing entries
             ) ?: MediumEntity(
                 uriString = it.uri.toString(),
                 path = it.data,
@@ -135,11 +142,13 @@ class LocalMediaSynchronizer @Inject constructor(
                 height = it.height,
                 duration = it.duration,
                 mediaStoreId = it.id,
+                contentHash = fileIdentifier // Set the hash on new entries
             )
+            mediumEntities.add(entity)
         }
-
+        
         mediumDao.upsertAll(mediumEntities)
-
+        
         val currentMediaUris = mediumEntities.map { it.uriString }
 
         val unwantedMedia = mediumDao.getAll().first()
