@@ -470,7 +470,6 @@ class PlayerService : MediaSessionService() {
         
         mediaRepository.updateMediumPosition(
             uri = mediaUri.toString(),
-            filename = filename,
             position = currentPosition,
         )
     }
