@@ -15,10 +15,10 @@ interface MediaRepository {
 
     suspend fun syncAllJsonPlaybackPositions(syncDirectoryUri: String)
     
-    suspend fun syncAndGetPlaybackPosition(uri: String, filename: String): Long?
+    suspend fun syncAndGetPlaybackPosition(uri: String): Long?
 
     fun updateMediumLastPlayedTime(uri: String, lastPlayedTime: Long)
-    fun updateMediumPosition(uri: String, filename: String, position: Long)
+    fun updateMediumPosition(uri: String, position: Long)
     fun updateMediumPlaybackSpeed(uri: String, playbackSpeed: Float)
     fun updateMediumAudioTrack(uri: String, audioTrackIndex: Int)
     fun updateMediumSubtitleTrack(uri: String, subtitleTrackIndex: Int)

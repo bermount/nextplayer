@@ -23,11 +23,6 @@ import java.security.MessageDigest
 
 private const val JSON_FILE_NAME = "playback_positions.json"
 
-fun hashString(input: String): String {
-    val bytes = MessageDigest.getInstance("SHA-256").digest(input.toByteArray())
-    return bytes.joinToString("") { "%02x".format(it) }
-}
-
 @Singleton
 class JsonPlaybackSyncManager @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -58,7 +53,8 @@ class JsonPlaybackSyncManager @Inject constructor(
                 if (playbackDir == null || !playbackDir.isDirectory) return@withContext emptyList()
 
                 val positions = playbackDir.listFiles().mapNotNull { file ->
-                    if (file.lastModified() > lastSyncTime) {
+// Temporarily removed filter to only sync recent modified files
+//                    if (file.lastModified() > lastSyncTime) {
                         try {
                             context.contentResolver.openInputStream(file.uri)?.use { inputStream ->
                                 BufferedReader(InputStreamReader(inputStream)).use { reader ->
@@ -69,9 +65,9 @@ class JsonPlaybackSyncManager @Inject constructor(
                         } catch (e: Exception) {
                         null
                         }
-                    } else {
-                        null
-                    }
+ //                   } else {
+ //                       null
+ //                   }
                 }
                 prefs.edit().putLong(KEY_LAST_SYNC_TIME, syncStartTime).apply()
                 positions
@@ -98,9 +94,8 @@ class JsonPlaybackSyncManager @Inject constructor(
                 }
                 if (playbackDir == null) return@withContext
                 
-                // Use filename as the file name
-                // Use a SHA-256 hash of the filename as the file name
-                val safeFilename = hashString(playbackPosition.filename)
+                // Use hash as the file name
+                val safeFilename = playbackPosition.identifier
                 val fileName = "$safeFilename.json"
                 
                 // Remove old file if exists
@@ -133,7 +128,6 @@ class JsonPlaybackSyncManager @Inject constructor(
                 }
                 
             } catch (e: Exception) {
-                Timber.e(e, "Error writing playback position for ${playbackPosition.filename}")
             }
         }
     }

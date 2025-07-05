@@ -108,7 +108,7 @@ class PlayerService : MediaSessionService() {
                     val filename = this@PlayerService.getFilenameFromUri(mediaUri)                    
                     
                     // Sync playback position from DB and JSON, and get the most recent one
-                    val syncedPosition = mediaRepository.syncAndGetPlaybackPosition(mediaItem.mediaId, filename)
+                    val syncedPosition = mediaRepository.syncAndGetPlaybackPosition(mediaItem.mediaId)
                     
                     // Get other video state information (speed, tracks etc.)
                     currentVideoState = mediaRepository.getVideoState(mediaItem.mediaId)
@@ -153,7 +153,6 @@ class PlayerService : MediaSessionService() {
                         val filename = this@PlayerService.getFilenameFromUri(oldMediaItem.mediaId.toUri())
                         mediaRepository.updateMediumPosition(
                             uri = oldMediaItem.mediaId,
-                            filename = filename,
                             position = oldPosition.positionMs.takeIf { reason == DISCONTINUITY_REASON_SEEK } ?: C.TIME_UNSET,
                         )
                     }
@@ -164,7 +163,6 @@ class PlayerService : MediaSessionService() {
                         val filename = this@PlayerService.getFilenameFromUri(oldMediaItem.mediaId.toUri())
                         mediaRepository.updateMediumPosition(
                             uri = oldMediaItem.mediaId,
-                            filename = filename,
                             position = oldPosition.positionMs,
                         )
                     }
@@ -207,7 +205,6 @@ class PlayerService : MediaSessionService() {
                     if (filename != null) {
                         mediaRepository.updateMediumPosition(
                             uri = mediaUri.toString(),
-                            filename = filename,
                             position = currentPosition,
                         )
                     }
@@ -280,7 +277,6 @@ class PlayerService : MediaSessionService() {
 
                         mediaRepository.updateMediumPosition(
                             uri = currentMediaItem.mediaId,
-                            filename = filename,
                             position = player.currentPosition,
                         )
                         mediaRepository.updateMediumSubtitleTrack(
