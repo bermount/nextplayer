@@ -53,7 +53,8 @@ class JsonPlaybackSyncManager @Inject constructor(
                 if (playbackDir == null || !playbackDir.isDirectory) return@withContext emptyList()
 
                 val positions = playbackDir.listFiles().mapNotNull { file ->
-                    if (file.lastModified() > lastSyncTime) {
+// Temporarily removed filter to only sync recent modified files
+//                    if (file.lastModified() > lastSyncTime) {
                         try {
                             context.contentResolver.openInputStream(file.uri)?.use { inputStream ->
                                 BufferedReader(InputStreamReader(inputStream)).use { reader ->
@@ -64,9 +65,9 @@ class JsonPlaybackSyncManager @Inject constructor(
                         } catch (e: Exception) {
                         null
                         }
-                    } else {
-                        null
-                    }
+ //                   } else {
+ //                       null
+ //                   }
                 }
                 prefs.edit().putLong(KEY_LAST_SYNC_TIME, syncStartTime).apply()
                 positions
