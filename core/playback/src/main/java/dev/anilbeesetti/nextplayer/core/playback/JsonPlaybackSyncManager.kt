@@ -128,7 +128,6 @@ class JsonPlaybackSyncManager @Inject constructor(
                 }
                 
             } catch (e: Exception) {
-                Timber.e(e, "Error writing playback position for ${playbackPosition.filename}")
             }
         }
     }
