@@ -1463,9 +1463,11 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
 
                         // Check if topinfo is properly shown and restart fastplayback
                         if (isFastPlaybackFromKeyboardActive && binding.topInfoLayout.visibility != View.VISIBLE) {
-                            val latestPressedKey: Int? = numpadKeyHistory.firstOrNull()
-                            unlockFastPlayback()
-                            startFastPlayback(latestPressedKey)
+                            val latestPressedKey: Int? = numpadKeyHistory.firstOrNull
+                            if (latestPressedKey != null) {
+                                unlockFastPlayback()
+                                startFastPlayback(latestPressedKey)
+                            }
                         }
                     }
                 }
@@ -1573,7 +1575,7 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         showTopInfo(getString(coreUiR.string.fast_playback_speed, "1.00"))
     }
 
-    private fun startFastPlayback(keyNumber: Int): {
+    private fun startFastPlayback(keyNumber: Int) {
         if (isFastPlaybackFromKeyboardActive) return
         mediaController?.let { controller ->
             isFastPlaybackFromKeyboardActive = true
