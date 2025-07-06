@@ -1360,6 +1360,15 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
     fun hideTopInfo() {
         binding.topInfoLayout.visibility = View.GONE
         hideTopInfoJob = null
+        
+        // Check if fastplayback is still active
+        if (isFastPlaybackFromKeyboardActive) {
+            val latestPressedKey: Int? = numpadKeyHistory.firstOrNull()
+            if (latestPressedKey != null) {
+                unlockFastPlayback()
+                startFastPlayback(latestPressedKey)
+            }
+        }
     }
 
     private fun updateKeepScreenOnFlag() {
@@ -1459,15 +1468,6 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
                                 thinProgress.visibility = View.GONE
                             }
                             updateRemainingTimeText(currentPosition, duration)
-                        }
-
-                        // Check if topinfo is properly shown and restart fastplayback
-                        if (isFastPlaybackFromKeyboardActive && binding.topInfoLayout.visibility != View.VISIBLE) {
-                            val latestPressedKey: Int? = numpadKeyHistory.firstOrNull()
-                            if (latestPressedKey != null) {
-                                unlockFastPlayback()
-                                startFastPlayback(latestPressedKey)
-                            }
                         }
                     }
                 }
@@ -1597,8 +1597,8 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         if (!isFastPlaybackFromKeyboardActive) return
         if (fastPlaybackLockActive && !force) return // Don't stop if locked, unless forced
         mediaController?.setPlaybackSpeed(originalPlaybackSpeed)
-        hideTopInfo()
         isFastPlaybackFromKeyboardActive = false
+        hideTopInfo()
     }
     
     // Overload hideTopInfo to allow for a delay
