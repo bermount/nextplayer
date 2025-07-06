@@ -1143,42 +1143,42 @@ class PlayerActivity : AppCompatActivity() {
 //            }
 
             // Fast Playback (Hold-to-Seek)
-            KeyEvent.KEYCODE_1,
-            KeyEvent.KEYCODE_NUMPAD_1,
-            -> {
-                startFastPlayback(1)
-                return true
-            }
-            KeyEvent.KEYCODE_2,
-            KeyEvent.KEYCODE_NUMPAD_2,
-            -> {
-                startFastPlayback(2)
-                return true
-            }
-            KeyEvent.KEYCODE_3,
-            KeyEvent.KEYCODE_NUMPAD_3,
-            -> {
-                startFastPlayback(3)
-                return true
-            }
-            KeyEvent.KEYCODE_4,
-            KeyEvent.KEYCODE_NUMPAD_4,
-            -> {
-                startFastPlayback(4)
-                return true
-            }
-            KeyEvent.KEYCODE_5,
-            KeyEvent.KEYCODE_NUMPAD_5,
-            -> {
-                startFastPlayback(5)
-                return true
-            }
-            KeyEvent.KEYCODE_6,
-            KeyEvent.KEYCODE_NUMPAD_6,
-            -> {
-                startFastPlayback(6)
-                return true
-            }
+//            KeyEvent.KEYCODE_1,
+//            KeyEvent.KEYCODE_NUMPAD_1,
+//            -> {
+//                startFastPlayback(1)
+//                return true
+//            }
+//            KeyEvent.KEYCODE_2,
+//            KeyEvent.KEYCODE_NUMPAD_2,
+//            -> {
+//                startFastPlayback(2)
+//                return true
+//            }
+//            KeyEvent.KEYCODE_3,
+//            KeyEvent.KEYCODE_NUMPAD_3,
+//            -> {
+//                startFastPlayback(3)
+//                return true
+//            }
+//            KeyEvent.KEYCODE_4,
+//            KeyEvent.KEYCODE_NUMPAD_4,
+//            -> {
+//                startFastPlayback(4)
+//                return true
+//            }
+//            KeyEvent.KEYCODE_5,
+//            KeyEvent.KEYCODE_NUMPAD_5,
+//            -> {
+//                startFastPlayback(5)
+//                return true
+//            }
+//            KeyEvent.KEYCODE_6,
+//            KeyEvent.KEYCODE_NUMPAD_6,
+//            -> {
+//                startFastPlayback(6)
+//                return true
+//            }
 
             // Show/Hide Controller
 //            KeyEvent.KEYCODE_DPAD_CENTER -> {
@@ -1254,22 +1254,22 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
 //            }
 
             // Stop Fast Playback on key release
-            KeyEvent.KEYCODE_1,
-            KeyEvent.KEYCODE_NUMPAD_1,
-            KeyEvent.KEYCODE_2,
-            KeyEvent.KEYCODE_NUMPAD_2,
-            KeyEvent.KEYCODE_3,
-            KeyEvent.KEYCODE_NUMPAD_3,
-            KeyEvent.KEYCODE_4,
-            KeyEvent.KEYCODE_NUMPAD_4,
-            KeyEvent.KEYCODE_5,
-            KeyEvent.KEYCODE_NUMPAD_5,
-            KeyEvent.KEYCODE_6,
-            KeyEvent.KEYCODE_NUMPAD_6,
-            -> {
-                stopFastPlayback()
-                return true
-            }
+//            KeyEvent.KEYCODE_1,
+//            KeyEvent.KEYCODE_NUMPAD_1,
+//            KeyEvent.KEYCODE_2,
+//            KeyEvent.KEYCODE_NUMPAD_2,
+//            KeyEvent.KEYCODE_3,
+//            KeyEvent.KEYCODE_NUMPAD_3,
+//            KeyEvent.KEYCODE_4,
+//            KeyEvent.KEYCODE_NUMPAD_4,
+//            KeyEvent.KEYCODE_5,
+//            KeyEvent.KEYCODE_NUMPAD_5,
+//            KeyEvent.KEYCODE_6,
+//            KeyEvent.KEYCODE_NUMPAD_6,
+//            -> {
+//                stopFastPlayback()
+//                return true
+//            }
         }
         return super.onKeyUp(keyCode, event)
     }
