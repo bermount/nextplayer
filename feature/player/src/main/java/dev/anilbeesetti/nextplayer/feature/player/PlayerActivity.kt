@@ -1039,7 +1039,9 @@ class PlayerActivity : AppCompatActivity() {
             if (event?.repeatCount == 0) {
                 val lastPressedNumber = getFastPlaybackKeyNumber(keyCode)
                 numpadKeyHistory.add(0,lastPressedNumber)
-                unlockFastPlayback()
+                if (fastPlaybackLockActive) {
+                    unlockFastPlayback()
+                }
                 startFastPlayback(lastPressedNumber)
                 fastPlaybackLockedKey = keyCode
                 return true
