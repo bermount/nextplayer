@@ -1036,15 +1036,17 @@ class PlayerActivity : AppCompatActivity() {
             KeyEvent.KEYCODE_6, KeyEvent.KEYCODE_NUMPAD_6
         )
         if (isNumPadKey) {
-            val lastPressedNumber = getFastPlaybackKeyNumber(keyCode)
-            numpadKeyHistory.add(0,lastPressedNumber)
-            unlockFastPlayback()
-            startFastPlayback(lastPressedNumber)
-            fastPlaybackLockedKey = keyCode
-            return true
+            if (event?.repeatCount == 0) {
+                val lastPressedNumber = getFastPlaybackKeyNumber(keyCode)
+                numpadKeyHistory.add(0,lastPressedNumber)
+                unlockFastPlayback()
+                startFastPlayback(lastPressedNumber)
+                fastPlaybackLockedKey = keyCode
+                return true
+            }
         }
         
-        if (keyCode == KeyEvent.KEYCODE_NUMPAD_DOT) {
+        if (keyCode == KeyEvent.KEYCODE_NUMPAD_DOT && event?.repeatCount == 0) {
             if (!fastPlaybackLockActive && fastPlaybackLockedKey != null) {
                 lockFastPlayback()
             } else if (fastPlaybackLockActive) {
@@ -1082,8 +1084,10 @@ class PlayerActivity : AppCompatActivity() {
             KeyEvent.KEYCODE_NUMPAD_8,
             KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE,
             -> {
-                binding.playerView.togglePlayPause()
-                return true
+                if (event?.repeatCount == 0) {
+                    binding.playerView.togglePlayPause()
+                    return true
+                }
             }
             KeyEvent.KEYCODE_MEDIA_PLAY -> {
                 mediaController?.play()
