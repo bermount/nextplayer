@@ -1211,7 +1211,7 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
     )
     if (isNumPadKey) {
         if (!fastPlaybackLockActive) {
-            numpadKeyHistory.remove(getFastPlaybackKeyNumber(keyCode))
+            numpadKeyHistory.removeAll(listOf(getFastPlaybackKeyNumber(keyCode)))
             val latestPressedKey: Int? = numpadKeyHistory.firstOrNull()
             if (latestPressedKey != null) {
                 unlockFastPlayback()
