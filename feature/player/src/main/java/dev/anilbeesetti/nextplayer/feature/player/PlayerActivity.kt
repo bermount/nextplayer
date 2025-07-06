@@ -156,6 +156,7 @@ class PlayerActivity : AppCompatActivity() {
 
     private var lastPressedNumber: Int = 0
     private val numpadKeyHistory = mutableListOf<Int>()
+    private var targetSpeed: Float = 1.0f
     private var fastPlaybackLockActive: Boolean = false
     private var fastPlaybackLockedSpeed: Float = 1.0f
     private var fastPlaybackLockedKey: Int? = null
@@ -1209,8 +1210,8 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         KeyEvent.KEYCODE_6, KeyEvent.KEYCODE_NUMPAD_6
     )
     if (isNumPadKey) {
-        numpadKeyHistory.remove(getFastPlaybackKeyNumber(keyCode))
         if (!fastPlaybackLockActive) {
+            numpadKeyHistory.remove(getFastPlaybackKeyNumber(keyCode))
             val latestPressedKey: Int? = numpadKeyHistory.firstOrNull()
             if (latestPressedKey != null) {
                 unlockFastPlayback()
@@ -1220,8 +1221,8 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
                 stopFastPlayback()
                 fastPlaybackLockedKey = null
             }
-        }
         return true
+        }
     }
         
     when (keyCode) {
@@ -1459,6 +1460,13 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
                             }
                             updateRemainingTimeText(currentPosition, duration)
                         }
+
+                        // Check if topinfo is properly shown and restart fastplayback
+                        if (isFastPlaybackFromKeyboardActive && binding.topInfoLayout.visibility != View.VISIBLE) {
+                            val latestPressedKey: Int? = numpadKeyHistory.firstOrNull()
+                            unlockFastPlayback()
+                            startFastPlayback(lastPressedKey)
+                        }
                     }
                 }
                 delay(250) // Update interval
@@ -1565,7 +1573,7 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         showTopInfo(getString(coreUiR.string.fast_playback_speed, "1.00"))
     }
 
-    private fun startFastPlayback(keyNumber: Int) {
+    private fun startFastPlayback(keyNumber: Int): {
         if (isFastPlaybackFromKeyboardActive) return
         mediaController?.let { controller ->
             isFastPlaybackFromKeyboardActive = true
@@ -1580,6 +1588,7 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
             }
             showTopInfo(getString(coreUiR.string.fast_playback_speed, targetSpeed))
             controller.setPlaybackSpeed(targetSpeed)
+            return targetSpeed
         }
     }
     
