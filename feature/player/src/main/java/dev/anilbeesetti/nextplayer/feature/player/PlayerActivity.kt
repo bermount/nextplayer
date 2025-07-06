@@ -154,6 +154,8 @@ class PlayerActivity : AppCompatActivity() {
 
     private lateinit var remainingTimeText: TextView
 
+    private var lastPressedNumber: Int = 0
+    private val numpadKeyHistory = mutableListOf<Int>()
     private var fastPlaybackLockActive: Boolean = false
     private var fastPlaybackLockedSpeed: Float = 1.0f
     private var fastPlaybackLockedKey: Int? = null
@@ -1001,7 +1003,7 @@ class PlayerActivity : AppCompatActivity() {
         KeyEvent.KEYCODE_4, KeyEvent.KEYCODE_NUMPAD_4 -> 4
         KeyEvent.KEYCODE_5, KeyEvent.KEYCODE_NUMPAD_5 -> 5
         KeyEvent.KEYCODE_6, KeyEvent.KEYCODE_NUMPAD_6 -> 6
-        else -> 1
+        else -> 0
     }
 
     private fun lockFastPlayback() {
@@ -1024,7 +1026,6 @@ class PlayerActivity : AppCompatActivity() {
     
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (isControlsLocked) return super.onKeyDown(keyCode, event)
-
         val isNumPadKey = keyCode in listOf(
             KeyEvent.KEYCODE_1, KeyEvent.KEYCODE_NUMPAD_1,
             KeyEvent.KEYCODE_2, KeyEvent.KEYCODE_NUMPAD_2,
@@ -1034,13 +1035,15 @@ class PlayerActivity : AppCompatActivity() {
             KeyEvent.KEYCODE_6, KeyEvent.KEYCODE_NUMPAD_6
         )
         if (isNumPadKey) {
+            val lastPressedNumber = getFastPlaybackKeyNumber(keyCode)
+            numpadKeyHistory.add(0,lastPressedNumber)
             if (fastPlaybackLockActive) {
                 // Unlock and switch to the new fast playback
                 unlockFastPlayback()
-                startFastPlayback(getFastPlaybackKeyNumber(keyCode))
+                startFastPlayback(lastPressedNumber)
                 fastPlaybackLockedKey = keyCode
             } else {
-                startFastPlayback(getFastPlaybackKeyNumber(keyCode))
+                startFastPlayback(lastPressedNumber)
                 fastPlaybackLockedKey = keyCode
             }
             return true
@@ -1212,9 +1215,17 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         KeyEvent.KEYCODE_6, KeyEvent.KEYCODE_NUMPAD_6
     )
     if (isNumPadKey) {
+        numpadKeyHistory.remove(getFastPlaybackKeyNumber(keyCode))
         if (!fastPlaybackLockActive) {
-            stopFastPlayback()
-            fastPlaybackLockedKey = null
+            val latestPressedKey: Int? = numpadKeyHistory.firstOrNull()
+            if (latestPressedKey != null) {
+                unlockFastPlayback()
+                startFastPlayback(latestPressedKey)
+                fastPlaybackLockedKey = keyCode
+            } else {
+                stopFastPlayback()
+                fastPlaybackLockedKey = null
+            }
         }
         return true
     }
@@ -1561,8 +1572,6 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
     }
 
     private fun startFastPlayback(keyNumber: Int) {
-        // If locked, ignore new number keys (can't override while locked)
-        if (fastPlaybackLockActive) return
         if (isFastPlaybackFromKeyboardActive) return
         mediaController?.let { controller ->
             isFastPlaybackFromKeyboardActive = true
