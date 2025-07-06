@@ -1465,7 +1465,7 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
                         if (isFastPlaybackFromKeyboardActive && binding.topInfoLayout.visibility != View.VISIBLE) {
                             val latestPressedKey: Int? = numpadKeyHistory.firstOrNull()
                             unlockFastPlayback()
-                            startFastPlayback(lastPressedKey)
+                            startFastPlayback(latestPressedKey)
                         }
                     }
                 }
