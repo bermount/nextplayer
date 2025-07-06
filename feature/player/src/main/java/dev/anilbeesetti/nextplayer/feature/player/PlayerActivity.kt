@@ -1039,9 +1039,7 @@ class PlayerActivity : AppCompatActivity() {
             if (event?.repeatCount == 0) {
                 val lastPressedNumber = getFastPlaybackKeyNumber(keyCode)
                 numpadKeyHistory.add(0,lastPressedNumber)
-                if (fastPlaybackLockActive) {
-                    unlockFastPlayback()
-                }
+                unlockFastPlayback()
                 startFastPlayback(lastPressedNumber)
                 fastPlaybackLockedKey = keyCode
                 return true
@@ -1575,7 +1573,7 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
     }
 
     private fun startFastPlayback(keyNumber: Int) {
-//        if (isFastPlaybackFromKeyboardActive) return
+        if (isFastPlaybackFromKeyboardActive) return
         mediaController?.let { controller ->
             isFastPlaybackFromKeyboardActive = true
             originalPlaybackSpeed = controller.playbackParameters.speed
