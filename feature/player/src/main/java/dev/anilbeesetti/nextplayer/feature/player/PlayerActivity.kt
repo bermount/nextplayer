@@ -1358,16 +1358,9 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
     }
 
     fun hideTopInfo() {
-        binding.topInfoLayout.visibility = View.GONE
-        hideTopInfoJob = null
-        
-        // Check if fastplayback is still active
-        if (isFastPlaybackFromKeyboardActive) {
-            val latestPressedKey: Int? = numpadKeyHistory.firstOrNull()
-            if (latestPressedKey != null) {
-                unlockFastPlayback()
-                startFastPlayback(latestPressedKey)
-            }
+        if (!isFastPlaybackFromKeyboardActive) {
+            binding.topInfoLayout.visibility = View.GONE
+            hideTopInfoJob = null
         }
     }
 
