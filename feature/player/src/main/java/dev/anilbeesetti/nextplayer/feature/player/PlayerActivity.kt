@@ -365,6 +365,7 @@ class PlayerActivity : AppCompatActivity() {
                 stop()
             }
         }
+        hideTopInfo()
     }
 
     override fun onStart() {
