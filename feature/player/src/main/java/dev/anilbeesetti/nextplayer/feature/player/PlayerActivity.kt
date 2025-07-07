@@ -1466,9 +1466,6 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
                             }
                             updateRemainingTimeText(currentPosition, duration)
                         }
-                        if (!isFastPlaybackFromKeyboardActive) {
-                            hideTopInfo()
-                        }
                     }
                 }
                 delay(250) // Update interval
