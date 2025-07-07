@@ -365,7 +365,6 @@ class PlayerActivity : AppCompatActivity() {
                 stop()
             }
         }
-        hideTopInfo()
     }
 
     override fun onStart() {
@@ -1466,6 +1465,9 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
                                 thinProgress.visibility = View.GONE
                             }
                             updateRemainingTimeText(currentPosition, duration)
+                        }
+                        if (!isFastPlaybackFromKeyboardActive) {
+                            hideTopInfo()
                         }
                     }
                 }
