@@ -1542,10 +1542,19 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
             remainingTimeText.visibility = View.GONE
             return
         }
+        
         if (duration > 0 && position <= duration) {
             val remainingMs = duration - position
             val remainingMin = ((remainingMs + 59_999) / 60_000).toInt() // round up to minutes
-            val text = if (remainingMin > 1) "${remainingMin}m" else "<1m"
+            
+            val now = System.currentTimeMillis()
+            val remainingFinishMillis = now + remainingMin * 60_000L
+            
+            // Format finish time as HH:mm
+            val remainingFinishTimeStr = SimpleDateFormat("HH:mm", Locale.getDefault())
+                .format(Date(remainingFinishMillis))
+                
+            val text = if (remainingMin > 1) "$remainingFinishTimeStr (-${remainingMin}m)" else "<1m"
             remainingTimeText.text = text
             remainingTimeText.visibility = View.VISIBLE
         } else {
