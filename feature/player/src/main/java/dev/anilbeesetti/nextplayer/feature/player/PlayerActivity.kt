@@ -402,6 +402,9 @@ class PlayerActivity : AppCompatActivity() {
             subtitleFileLauncherLaunchedForMediaItem = null
         }
         initializePlayerView()
+
+        isFastPlaybackFromKeyboardActive = false
+        hideTopInfo()
         
         //Remaining Time Text
         finishTimeText = findViewById(R.id.finish_time_text)
