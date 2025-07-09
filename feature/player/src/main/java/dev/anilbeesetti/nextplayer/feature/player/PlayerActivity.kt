@@ -1531,9 +1531,9 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         val minutes = ((msDiff + if (msDiff >= 0) 0 else -59_999) / 60_000).toInt()
 
         val showText = if (minutes == -1) {
-            "$finishTimeStr (<1m)"
+            "Init $finishTimeStr (<1m)"
         } else {
-            "$finishTimeStr (${if (minutes >= 0) "+" else ""}${minutes}m)"
+            "Init $finishTimeStr (${if (minutes >= 0) "+" else ""}${minutes}m)"
         }
         finishTimeText.text = showText
         finishTimeText.visibility = View.VISIBLE
@@ -1557,7 +1557,7 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
             val remainingFinishTimeStr = SimpleDateFormat("HH:mm", Locale.getDefault())
                 .format(Date(remainingFinishMillis))
                 
-            val text = if (remainingMin > 1) "$remainingFinishTimeStr (-${remainingMin}m)" else "<1m"
+            val text = if (remainingMin > 1) "Est $remainingFinishTimeStr (-${remainingMin}m)" else "<1m"
             remainingTimeText.text = text
             remainingTimeText.visibility = View.VISIBLE
         } else {
