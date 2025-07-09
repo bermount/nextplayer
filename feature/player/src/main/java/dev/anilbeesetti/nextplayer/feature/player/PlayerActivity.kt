@@ -1502,9 +1502,8 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         if (finishTimeMillis != null) return  // Already set
         if (duration > 0 && currentPos <= duration) {
             val remainingMs = duration - currentPos
-            val remainingMin = ((remainingMs + 59_999) / 60_000).toInt()
             val now = System.currentTimeMillis()
-            finishTimeMillis = now + remainingMin * 60_000L
+            finishTimeMillis = now + remainingMs
             if (playerPreferences.showFinishTime) {
                 finishTimeText.visibility = View.VISIBLE
             }
@@ -1527,11 +1526,15 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         val finishTimeStr = SimpleDateFormat("HH:mm", Locale.getDefault())
             .format(Date(finishMillis))
             
-        // Time difference from finish time (round up to the next minute)
+        // Time difference from finish time (round up to the lowest minute)
         val msDiff = System.currentTimeMillis() - finishMillis
-        val minutes = (msDiff + if (msDiff >= 0) 30_000 else -30_000) / 60_000
+        val minutes = ((msDiff + if (msDiff >= 0) 0 else -59_999) / 60_000).toInt()
 
-        val showText = "$finishTimeStr (${if (minutes >= 0) "+" else ""}${minutes}m)"
+        val showText = if (minutes == -1) {
+            "$finishTimeStr (<1m)"
+        } else {
+            "$finishTimeStr (${if (minutes >= 0) "+" else ""}${minutes}m)"
+        }
         finishTimeText.text = showText
         finishTimeText.visibility = View.VISIBLE
     }
@@ -1548,7 +1551,7 @@ override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
             val remainingMin = ((remainingMs + 59_999) / 60_000).toInt() // round up to minutes
             
             val now = System.currentTimeMillis()
-            val remainingFinishMillis = now + remainingMin * 60_000L
+            val remainingFinishMillis = now + remainingMs
             
             // Format finish time as HH:mm
             val remainingFinishTimeStr = SimpleDateFormat("HH:mm", Locale.getDefault())
