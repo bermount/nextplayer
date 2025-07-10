@@ -231,7 +231,6 @@ class PlayerActivity : AppCompatActivity() {
             }
         }
 
-    // Initial create
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -291,39 +290,6 @@ class PlayerActivity : AppCompatActivity() {
             heightInDp,
             resources.displayMetrics
         ).toInt()
-
-        // Set finish/remaining time text size
-        val displayMetrics = DisplayMetrics()
-        (getSystemService(Context.WINDOW_SERVICE) as? WindowManager)?.defaultDisplay?.getMetrics(displayMetrics)
-
-        //Convert screen width to centimeters
-        val screenWidthInches = displayMetrics.widthPixels / displayMetrics.xdpi
-        val screenWidthCm = screenWidthInches * 2.54f
-                
-        // Convert the target size from centimeters to millimeters for TypedValue
-        val scaledTextSizeMm = screenWidthCm * 10f
-        val scaledTextSizePx = if (scaledTextSizeMm < 155f) {
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.024f
-        } else if (scaledTextSizeMm < 200f) {
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.022f
-        } else if (scaledTextSizeMm < 300f) {
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.008f
-        } else if (scaledTextSizeMm < 450f) {
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.006f
-        } else if (scaledTextSizeMm < 600f) {
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.005f
-        } else if (scaledTextSizeMm < 700f) {
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.004f
-        } else if (scaledTextSizeMm < 1000f) {
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.003f
-        } else {
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.0015f
-        }
-        val scaledTextSizeSp = scaledTextSizePx / resources.displayMetrics.scaledDensity
-        
-        finishTimeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledTextSizeSp)
-        remainingTimeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledTextSizeSp)
-        
         
         if (playerPreferences.controlButtonsPosition == ControlButtonsPosition.RIGHT) {
             extraControls.gravity = Gravity.END
@@ -401,7 +367,6 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
-    // On start/resume to player
     override fun onStart() {
         super.onStart()
         if (playerPreferences.rememberPlayerBrightness) {
@@ -445,6 +410,36 @@ class PlayerActivity : AppCompatActivity() {
         finishTimeText = findViewById(R.id.finish_time_text)
         remainingTimeText = findViewById(R.id.remaining_time_text)
 
+        val displayMetrics = DisplayMetrics()
+        (getSystemService(Context.WINDOW_SERVICE) as? WindowManager)?.defaultDisplay?.getMetrics(displayMetrics)
+
+        //Convert screen width to centimeters
+        val screenWidthInches = displayMetrics.widthPixels / displayMetrics.xdpi
+        val screenWidthCm = screenWidthInches * 2.54f
+                
+        // Convert the target size from centimeters to millimeters for TypedValue
+        val scaledTextSizeMm = screenWidthCm * 10f
+        val scaledTextSizePx = if (scaledTextSizeMm < 155f) {
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.024f
+        } else if (scaledTextSizeMm < 200f) {
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.022f
+        } else if (scaledTextSizeMm < 300f) {
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.008f
+        } else if (scaledTextSizeMm < 450f) {
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.006f
+        } else if (scaledTextSizeMm < 600f) {
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.005f
+        } else if (scaledTextSizeMm < 700f) {
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.004f
+        } else if (scaledTextSizeMm < 1000f) {
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.003f
+        } else {
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.0015f
+        }
+        val scaledTextSizeSp = scaledTextSizePx / resources.displayMetrics.scaledDensity
+        
+        finishTimeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledTextSizeSp)
+        remainingTimeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledTextSizeSp)
     }
 
     override fun onStop() {
