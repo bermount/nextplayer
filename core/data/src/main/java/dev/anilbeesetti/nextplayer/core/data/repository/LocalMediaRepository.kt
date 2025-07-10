@@ -22,10 +22,12 @@ import dev.anilbeesetti.nextplayer.core.playback.JsonPlaybackSyncManager
 import dev.anilbeesetti.nextplayer.core.playback.PlaybackPosition
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 class LocalMediaRepository @Inject constructor(
@@ -113,22 +115,36 @@ class LocalMediaRepository @Inject constructor(
         
         when {
             jsonTimestamp > dbTimestamp && jsonPosition != null -> {
-                Timber.d("JSON is newer for $fileIdentifier. Syncing JSON to DB.")
-                mediumDao.updatePositionAndTimestamp(uri, jsonPosition, jsonTimestamp)
+                // Return the position immediately
                 return jsonPosition
+                // Then, launch the synchronization work in a background coroutine using applicationScope
+                applicationScope.launch {
+                    // Ensure I/O operations are run on the Dispatchers.IO thread
+                    withContext(Dispatchers.IO) {
+                        Timber.d("JSON is newer for $fileIdentifier. Syncing JSON to DB in background.")
+                        mediumDao.updatePositionAndTimestamp(uri, jsonPosition, jsonTimestamp)
+                    }
+                }
             }
             dbTimestamp > jsonTimestamp && dbPosition != null -> {
-                Timber.d("DB is newer for $fileIdentifier. Syncing DB to JSON.")
-                val updatedJsonEntry = PlaybackPosition(fileIdentifier, dbPosition, dbTimestamp)
-                jsonPlaybackSyncManager.writePlaybackPositions(syncFolder, updatedJsonEntry)
+                // Return the position immediately
                 return dbPosition
+                // Then, launch the synchronization work in a background coroutine using applicationScope
+                applicationScope.launch {
+                    // Ensure I/O operations are run on the Dispatchers.IO thread
+                    withContext(Dispatchers.IO) {
+                        Timber.d("DB is newer for $fileIdentifier. Syncing DB to JSON in background.")
+                        val updatedJsonEntry = PlaybackPosition(fileIdentifier, dbPosition, dbTimestamp)
+                        jsonPlaybackSyncManager.writePlaybackPositions(syncFolder, updatedJsonEntry)
+                    }
+                }
             }
             else -> {
                 return dbPosition
             }
         }
     }
-
+    
     override fun updateMediumPlaybackSpeed(uri: String, playbackSpeed: Float) {
         applicationScope.launch {
             mediumDao.updateMediumPlaybackSpeed(uri, playbackSpeed)
