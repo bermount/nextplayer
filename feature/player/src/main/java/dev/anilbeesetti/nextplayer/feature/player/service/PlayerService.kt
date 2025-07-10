@@ -202,14 +202,6 @@ class PlayerService : MediaSessionService() {
             }
         }
 
-        override fun onIsPlayingChanged(isPlaying: Boolean) {
-            super.onIsPlayingChanged(isPlaying)
-            // If playback is stopping (but not because the video ended), save the position.
-            if (!isPlaying && mediaSession?.player?.playbackState != Player.STATE_ENDED) {
-                saveCurrentPlaybackPosition()
-            }
-        }
-
         override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
             super.onPlayWhenReadyChanged(playWhenReady, reason)
 
