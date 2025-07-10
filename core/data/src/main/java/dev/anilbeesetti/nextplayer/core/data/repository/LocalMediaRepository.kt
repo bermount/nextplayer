@@ -113,15 +113,15 @@ class LocalMediaRepository @Inject constructor(
         
         when {
             jsonTimestamp > dbTimestamp && jsonPosition != null -> {
+                return jsonPosition
                 Timber.d("JSON is newer for $fileIdentifier. Syncing JSON to DB.")
                 mediumDao.updatePositionAndTimestamp(uri, jsonPosition, jsonTimestamp)
-                return jsonPosition
             }
             dbTimestamp > jsonTimestamp && dbPosition != null -> {
+                return dbPosition
                 Timber.d("DB is newer for $fileIdentifier. Syncing DB to JSON.")
                 val updatedJsonEntry = PlaybackPosition(fileIdentifier, dbPosition, dbTimestamp)
                 jsonPlaybackSyncManager.writePlaybackPositions(syncFolder, updatedJsonEntry)
-                return dbPosition
             }
             else -> {
                 return dbPosition
