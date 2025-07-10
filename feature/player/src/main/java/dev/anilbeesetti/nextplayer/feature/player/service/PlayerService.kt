@@ -102,6 +102,15 @@ class PlayerService : MediaSessionService() {
                     
                     // Sync playback position from DB and JSON, and get the most recent one
                     val syncedPosition = mediaRepository.syncAndGetPlaybackPosition(mediaItem.mediaId)
+
+                    // Seek to the synced position if available and resume is enabled
+                    val positionToSeek = syncedPosition?.takeIf { playerPreferences.resume == Resume.YES }
+                    if (positionToSeek != null && positionToSeek > 0) { // Only seek if position is greater than 0
+                        mediaSession?.player?.seekTo(positionToSeek)
+                    } else if (playerPreferences.resume == Resume.NO) {
+                        // If resume is disabled
+//                        mediaSession?.player?.seekTo(0)
+                    }
                     
                     // Get other video state information (speed, tracks etc.)
                     currentVideoState = mediaRepository.getVideoState(mediaItem.mediaId)
@@ -110,14 +119,6 @@ class PlayerService : MediaSessionService() {
                     mediaSession?.player?.setPlaybackSpeed(
                         currentVideoState?.playbackSpeed ?: playerPreferences.defaultPlaybackSpeed,
                     )
-                    // Seek to the synced position if available and resume is enabled
-                    val positionToSeek = syncedPosition?.takeIf { playerPreferences.resume == Resume.YES }
-                    if (positionToSeek != null && positionToSeek > 0) { // Only seek if position is greater than 0
-                        mediaSession?.player?.seekTo(positionToSeek)
-                    } else if (playerPreferences.resume == Resume.NO) {
-                        // If resume is disabled, ensure we start from 0 or the player's default start position
-                        mediaSession?.player?.seekTo(0)
-                    }
                     
                     // Restore audio/subtitle tracks if rememberSelections is enabled
                     currentVideoState?.let { state ->
