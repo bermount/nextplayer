@@ -446,9 +446,16 @@ class PlayerActivity : AppCompatActivity() {
     private fun setFinishAndRemainingTextSizes() {
         val displayMetrics = DisplayMetrics()
         (getSystemService(Context.WINDOW_SERVICE) as? WindowManager)?.defaultDisplay?.getMetrics(displayMetrics)
+
+        // Get both width and height in pixels
+        val screenWidthPixels = displayMetrics.widthPixels
+        val screenHeightPixels = displayMetrics.heightPixels
+
+        // Choose the maximum of width and height in pixels and consider as width
+        val maxScreenDimensionWidthPixels = maxOf(screenWidthPixels, screenHeightPixels)
         
         //Convert screen width to centimeters
-        val screenWidthInches = displayMetrics.widthPixels / displayMetrics.xdpi
+        val screenWidthInches = maxScreenDimensionWidthPixels / displayMetrics.xdpi
         val screenWidthCm = screenWidthInches * 2.54f
         
         // Convert the target size from centimeters to millimeters for TypedValue
