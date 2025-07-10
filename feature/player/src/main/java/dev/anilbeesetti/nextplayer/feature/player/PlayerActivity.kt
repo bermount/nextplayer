@@ -875,20 +875,19 @@ class PlayerActivity : AppCompatActivity() {
             videoTitleTextView.text = mediaMetadata.title
         }
 
-                override fun onIsPlayingChanged(isPlaying: Boolean) {
+        override fun onIsPlayingChanged(isPlaying: Boolean) {
             super.onIsPlayingChanged(isPlaying)
             updateKeepScreenOnFlag()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && isPipSupported) {
                 updatePictureInPictureParams()
             }
-            // Add this if/else block
             if (isPlaying) {
                 startProgressUpdater()
             } else {
                 stopProgressUpdater()
             }
         }
-
+        
         override fun onAudioSessionIdChanged(audioSessionId: Int) {
             super.onAudioSessionIdChanged(audioSessionId)
             volumeManager.loudnessEnhancer?.release()
@@ -953,7 +952,7 @@ class PlayerActivity : AppCompatActivity() {
                 }
                 Player.STATE_IDLE -> {
                     isPlaybackFinished = mediaController?.playbackState == Player.STATE_ENDED
-                    // Add these lines to stop and reset the progress bar
+                    // Stop and reset the progress bar
                     stopProgressUpdater()
                     thinProgress.visibility = View.GONE
                     thinProgress.layoutParams.width = 0
