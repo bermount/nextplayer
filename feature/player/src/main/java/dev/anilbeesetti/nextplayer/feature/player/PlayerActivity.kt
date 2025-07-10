@@ -137,6 +137,7 @@ class PlayerActivity : AppCompatActivity() {
     private var hideInfoLayoutJob: Job? = null
     
     private lateinit var thinProgress: View
+    private lateinit var remainingTimeText: TextView
     private lateinit var finishTimeText: TextView
     private var finishTimeMillis: Long? = null
     private var progressUpdateJob: Job? = null
@@ -151,8 +152,6 @@ class PlayerActivity : AppCompatActivity() {
 
     private val shouldFastSeek: Boolean
         get() = playerPreferences.shouldFastSeek(mediaController?.duration ?: C.TIME_UNSET)
-
-    private lateinit var remainingTimeText: TextView
 
     private var lastPressedNumber: Int = 0
     private val numpadKeyHistory = mutableListOf<Int>()
@@ -290,6 +289,9 @@ class PlayerActivity : AppCompatActivity() {
             heightInDp,
             resources.displayMetrics
         ).toInt()
+
+        // Set finish/remaining text size
+        setFinishAndRemainingTextSizes()
         
         if (playerPreferences.controlButtonsPosition == ControlButtonsPosition.RIGHT) {
             extraControls.gravity = Gravity.END
@@ -406,11 +408,9 @@ class PlayerActivity : AppCompatActivity() {
         isFastPlaybackFromKeyboardActive = false
         hideTopInfo()
         
-        //Remaining Time Text
+        //Finish/Remaining Time Text
         finishTimeText = findViewById(R.id.finish_time_text)
         remainingTimeText = findViewById(R.id.remaining_time_text)
-        delay(1000)
-        setFinishAndRemainingTextSizes()
 
     }
 
