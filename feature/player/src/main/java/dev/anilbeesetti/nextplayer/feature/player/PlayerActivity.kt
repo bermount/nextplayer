@@ -460,20 +460,24 @@ class PlayerActivity : AppCompatActivity() {
         
         // Convert the target size from centimeters to millimeters for TypedValue
         val scaledTextSizeMm = screenWidthCm * 10f
-        val scaledTextSizePx = if (scaledTextSizeMm < 155f) {
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.0098f
+        val scaledTextSizePx = if (scaledTextSizeMm < 150f) {
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.01f
         } else if (scaledTextSizeMm < 200f) {
             TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.0095f
+        } else if (scaledTextSizeMm < 250f) {
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.009f
         } else if (scaledTextSizeMm < 300f) {
             TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.0082f
-        } else if (scaledTextSizeMm < 450f) {
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.0063f
+        } else if (scaledTextSizeMm < 400f) {
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.0077f
+        } else if (scaledTextSizeMm < 500f) {
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.0064f
         } else if (scaledTextSizeMm < 600f) {
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.0055f
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.0053f
         } else if (scaledTextSizeMm < 700f) {
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.0045f
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.0042f
         } else if (scaledTextSizeMm < 1000f) {
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.0035f
+            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.0033f
         } else {
             TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, scaledTextSizeMm, displayMetrics) * 0.002f
         }
