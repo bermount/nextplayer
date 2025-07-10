@@ -289,9 +289,6 @@ class PlayerActivity : AppCompatActivity() {
             heightInDp,
             resources.displayMetrics
         ).toInt()
-
-        // Set finish/remaining text size
-        setFinishAndRemainingTextSizes()
         
         if (playerPreferences.controlButtonsPosition == ControlButtonsPosition.RIGHT) {
             extraControls.gravity = Gravity.END
@@ -411,6 +408,9 @@ class PlayerActivity : AppCompatActivity() {
         //Finish/Remaining Time Text
         finishTimeText = findViewById(R.id.finish_time_text)
         remainingTimeText = findViewById(R.id.remaining_time_text)
+        
+        // Set finish/remaining text size
+        setFinishAndRemainingTextSizes()
 
     }
 
@@ -888,6 +888,7 @@ class PlayerActivity : AppCompatActivity() {
             }
             if (isPlaying) {
                 startProgressUpdater()
+                setFinishAndRemainingTextSizes()
             } else {
                 stopProgressUpdater()
             }
